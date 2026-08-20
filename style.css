@@ -549,3 +549,14 @@ select {
   }
 
 }
+.crypto-area {
+  margin-top: 18px;
+}
+
+.crypto-area .currency-card {
+  border-left: 4px solid #f7931a;
+}
+
+.crypto-area .currency-label strong {
+  color: var(--success);
+}
