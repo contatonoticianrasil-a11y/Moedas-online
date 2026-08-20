@@ -43,7 +43,6 @@ function formatarMoeda(valor, codigo) {
    CARREGAR COTAÇÕES
 ========================= */
 
-async function carregarCotacoes() {
 async function carregarBitcoin() {
 
   const area =
@@ -193,6 +192,7 @@ setInterval(
       </div>
     `;
 
+    
     document.getElementById(
       "heroDollar"
     ).textContent = "Indisponível";
