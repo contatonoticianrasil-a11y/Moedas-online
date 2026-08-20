@@ -3,288 +3,252 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gonçalves Câmbio | Login</title>
 
-  <title>Gonçalves Câmbio | Painel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  <link rel="stylesheet" href="painel.css">
+    body {
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background:
+        radial-gradient(circle at top right, #14532d, transparent 35%),
+        linear-gradient(135deg, #020617, #07111f);
+    }
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    .login {
+      width: 100%;
+      max-width: 420px;
+      padding: 38px;
+      border-radius: 24px;
+      background: rgba(15, 23, 42, .94);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 30px 80px rgba(0,0,0,.5);
+      color: white;
+    }
+
+    .logo {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 20px;
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg,#22c55e,#15803d);
+      font-size: 36px;
+      box-shadow: 0 15px 35px rgba(34,197,94,.25);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 27px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      margin: 8px 0 30px;
+    }
+
+    label {
+      display: block;
+      margin: 16px 0 7px;
+      color: #cbd5e1;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      height: 52px;
+      padding: 0 15px;
+      border-radius: 11px;
+      border: 1px solid #334155;
+      background: #020617;
+      color: white;
+      outline: none;
+      font-size: 15px;
+    }
+
+    input:focus {
+      border-color: #22c55e;
+    }
+
+    #loginBtn {
+      width: 100%;
+      height: 52px;
+      margin-top: 24px;
+      border: 0;
+      border-radius: 11px;
+      background: #16a34a;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #loginBtn:hover {
+      background: #15803d;
+    }
+
+    #loginMessage {
+      min-height: 24px;
+      margin-top: 15px;
+      text-align: center;
+      color: #f87171;
+      font-size: 14px;
+    }
+
+    .security {
+      margin-top: 25px;
+      padding: 13px;
+      border-radius: 11px;
+      background: rgba(34,197,94,.08);
+      color: #86efac;
+      text-align: center;
+      font-size: 13px;
+    }
+  </style>
 </head>
 
 <body>
 
-  <!-- ==============================
-       LOGIN
-  =============================== -->
-  <div id="loginPage" class="page">
+  <main class="login">
 
-    <div class="login-box">
+    <div class="logo">💱</div>
 
-      <div class="logo">💱</div>
+    <h1>Gonçalves Câmbio</h1>
 
-      <h1>Gonçalves Câmbio</h1>
+    <p class="subtitle">
+      Painel Administrativo
+    </p>
 
-      <p>Painel Administrativo</p>
+    <form id="loginForm">
 
-      <form id="loginForm">
+      <label for="email">
+        E-mail
+      </label>
 
-        <label>E-mail</label>
+      <input
+        id="email"
+        type="email"
+        placeholder="Digite seu e-mail"
+        autocomplete="username"
+        required
+      >
 
-        <input
-          id="email"
-          type="email"
-          placeholder="Digite seu e-mail"
-          required
-        >
+      <label for="password">
+        Senha
+      </label>
 
-        <label>Senha</label>
+      <input
+        id="password"
+        type="password"
+        placeholder="Digite sua senha"
+        autocomplete="current-password"
+        required
+      >
 
-        <input
-          id="password"
-          type="password"
-          placeholder="Digite sua senha"
-          required
-        >
+      <button id="loginBtn" type="submit">
+        Entrar no painel
+      </button>
 
-        <button type="submit" id="loginBtn">
-          Entrar no painel
-        </button>
+      <div id="loginMessage"></div>
 
-        <div id="loginMessage"></div>
+    </form>
 
-      </form>
-
+    <div class="security">
+      🛡️ Acesso protegido pelo Supabase Auth
     </div>
 
-  </div>
+  </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- ==============================
-       PAINEL
-  =============================== -->
-  <div id="adminPage" class="admin-page hidden">
+  <script>
+    const SUPABASE_URL =
+      "https://skfodedzzdeptnksufuq.supabase.co";
 
-    <header class="topbar">
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_TDC6NwdHx1XuYhXcFzxkiQ_1N6lLkGE";
 
-      <div>
-        <strong>💱 Gonçalves Câmbio</strong>
-        <span>Painel de Propagandas</span>
-      </div>
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+      );
 
-      <div class="top-actions">
+    async function verificarSessao() {
 
-        <span id="userEmail"></span>
+      const { data } =
+        await supabaseClient.auth.getSession();
 
-        <button id="logoutBtn" class="logout">
-          🚪 Sair
-        </button>
+      if (data && data.session) {
+        window.location.href = "dashboard.html";
+      }
 
-      </div>
+    }
 
-    </header>
+    verificarSessao();
 
+    document
+      .getElementById("loginForm")
+      .addEventListener("submit", async function(event) {
 
-    <main class="container">
+        event.preventDefault();
 
-      <section class="page-title">
+        const email =
+          document.getElementById("email").value.trim();
 
-        <div>
-          <h1>📢 Propagandas</h1>
+        const password =
+          document.getElementById("password").value;
 
-          <p>
-            Cadastre e controle as propagandas que aparecerão no site.
-          </p>
-        </div>
+        const btn =
+          document.getElementById("loginBtn");
 
-        <button id="novoAnuncioBtn" class="primary">
-          ➕ Nova propaganda
-        </button>
+        const message =
+          document.getElementById("loginMessage");
 
-      </section>
+        btn.disabled = true;
+        btn.textContent = "Entrando...";
+        message.textContent = "";
 
+        const { error } =
+          await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
 
-      <!-- ==============================
-           FORMULÁRIO
-      =============================== -->
+        if (error) {
 
-      <section id="formSection" class="card hidden">
+          message.textContent =
+            "❌ E-mail ou senha incorretos.";
 
-        <h2 id="formTitle">
-          ➕ Nova propaganda
-        </h2>
+          btn.disabled = false;
+          btn.textContent = "Entrar no painel";
 
-        <form id="anuncioForm">
+          return;
+        }
 
-          <input type="hidden" id="anuncioId">
+        message.style.color = "#4ade80";
+        message.textContent =
+          "✅ Login realizado. Entrando...";
 
-          <div class="form-grid">
+        setTimeout(function() {
+          window.location.href = "dashboard.html";
+        }, 500);
 
-            <div class="field">
-
-              <label>Título da propaganda</label>
-
-              <input
-                id="titulo"
-                type="text"
-                placeholder="Ex.: Oferta especial"
-                required
-              >
-
-            </div>
-
-
-            <div class="field">
-
-              <label>URL da imagem</label>
-
-              <input
-                id="imagem"
-                type="url"
-                placeholder="https://site.com/imagem.jpg"
-              >
-
-            </div>
-
-
-            <div class="field full">
-
-              <label>Link da propaganda</label>
-
-              <input
-                id="link"
-                type="url"
-                placeholder="https://site.com/oferta"
-                required
-              >
-
-            </div>
-
-
-            <div class="field full">
-
-              <label>Descrição</label>
-
-              <textarea
-                id="descricao"
-                rows="4"
-                placeholder="Descrição da propaganda"
-              ></textarea>
-
-            </div>
-
-
-            <div class="field">
-
-              <label>Status</label>
-
-              <select id="ativo">
-
-                <option value="true">
-                  🟢 Ativo
-                </option>
-
-                <option value="false">
-                  🔴 Inativo
-                </option>
-
-              </select>
-
-            </div>
-
-
-            <div class="field">
-
-              <label>Tempo para aparecer novamente</label>
-
-              <input
-                id="intervalo"
-                type="number"
-                min="0"
-                value="0"
-              >
-
-              <small>
-                Em minutos. 0 = sempre que a página abrir.
-              </small>
-
-            </div>
-
-          </div>
-
-
-          <div class="form-actions">
-
-            <button
-              type="button"
-              id="cancelarBtn"
-              class="secondary"
-            >
-              Cancelar
-            </button>
-
-            <button
-              type="submit"
-              id="salvarBtn"
-              class="primary"
-            >
-              💾 Salvar propaganda
-            </button>
-
-          </div>
-
-          <div id="formMessage"></div>
-
-        </form>
-
-      </section>
-
-
-      <!-- ==============================
-           LISTA
-      =============================== -->
-
-      <section class="card">
-
-        <div class="section-header">
-
-          <div>
-
-            <h2>📋 Propagandas cadastradas</h2>
-
-            <p>
-              Gerencie os anúncios do seu site.
-            </p>
-
-          </div>
-
-          <button id="atualizarBtn" class="secondary">
-            ↻ Atualizar
-          </button>
-
-        </div>
-
-
-        <div id="anunciosLista">
-
-          <div class="loading">
-            ⏳ Carregando propagandas...
-          </div>
-
-        </div>
-
-      </section>
-
-    </main>
-
-
-    <footer>
-      © <span id="ano"></span> Gonçalves Câmbio
-    </footer>
-
-  </div>
-
-
-  <script src="painel.js"></script>
+      });
+  </script>
 
 </body>
 </html>
