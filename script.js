@@ -505,3 +505,380 @@ setInterval(
   carregarCotacoes,
   5 * 60 * 1000
 );
+/* =========================
+   GRÁFICO HISTÓRICO
+========================= */
+
+let currencyChart = null;
+
+async function carregarHistorico(codigo) {
+
+  const canvas =
+    document.getElementById("currencyChart");
+
+  const mensagem =
+    document.getElementById("chartMessage");
+
+  mensagem.textContent =
+    "⏳ Carregando histórico...";
+
+  try {
+
+    /*
+      Busca os últimos 7 dias.
+    */
+
+    const hoje = new Date();
+
+    const dataFinal =
+      hoje.toISOString().split("T")[0];
+
+    const inicio =
+      new Date(
+        hoje.getTime() -
+        7 * 24 * 60 * 60 * 1000
+      );
+
+    const dataInicial =
+      inicio.toISOString().split("T")[0];
+
+
+    const url =
+      `https://api.frankfurter.app/${dataInicial}..${dataFinal}?from=BRL&to=${codigo}`;
+
+
+    const resposta =
+      await fetch(url);
+
+
+    if (!resposta.ok) {
+      throw new Error(
+        "Erro ao buscar histórico"
+      );
+    }
+
+
+    const dados =
+      await resposta.json();
+
+
+    const datas =
+      Object.keys(dados.rates);
+
+
+    const valores =
+      datas.map(
+        data => {
+
+          const taxa =
+            dados.rates[data][codigo];
+
+          /*
+            A API retorna:
+            1 BRL = X moeda.
+
+            Para mostrar:
+            1 moeda = X BRL
+          */
+
+          return 1 / taxa;
+
+        }
+      );
+
+
+    mensagem.style.display =
+      "none";
+
+
+    desenharGrafico(
+      canvas,
+      datas,
+      valores,
+      codigo
+    );
+
+
+  } catch (erro) {
+
+    console.error(erro);
+
+    mensagem.style.display =
+      "flex";
+
+    mensagem.textContent =
+      "❌ Histórico indisponível no momento.";
+
+  }
+
+}
+
+
+/* =========================
+   DESENHAR GRÁFICO
+========================= */
+
+function desenharGrafico(
+  canvas,
+  datas,
+  valores,
+  codigo
+) {
+
+  const ctx =
+    canvas.getContext("2d");
+
+
+  /*
+    Limpa gráfico anterior.
+  */
+
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+
+  const largura =
+    canvas.clientWidth;
+
+  const altura =
+    canvas.clientHeight;
+
+
+  canvas.width =
+    largura * window.devicePixelRatio;
+
+  canvas.height =
+    altura * window.devicePixelRatio;
+
+
+  ctx.scale(
+    window.devicePixelRatio,
+    window.devicePixelRatio
+  );
+
+
+  const w = largura;
+
+  const h = altura;
+
+
+  const margem = 45;
+
+
+  const menor =
+    Math.min(...valores);
+
+  const maior =
+    Math.max(...valores);
+
+
+  const diferenca =
+    maior - menor || 1;
+
+
+  /*
+    Linha do gráfico.
+  */
+
+  ctx.beginPath();
+
+
+  valores.forEach(
+    (valor, index) => {
+
+      const x =
+        margem +
+        (
+          index /
+          Math.max(valores.length - 1, 1)
+        ) *
+        (
+          w -
+          margem * 2
+        );
+
+
+      const y =
+        h -
+        margem -
+        (
+          (valor - menor) /
+          diferenca
+        ) *
+        (
+          h -
+          margem * 2
+        );
+
+
+      if (index === 0) {
+
+        ctx.moveTo(x, y);
+
+      } else {
+
+        ctx.lineTo(x, y);
+
+      }
+
+    }
+  );
+
+
+  ctx.strokeStyle =
+    "#176bff";
+
+  ctx.lineWidth = 3;
+
+  ctx.stroke();
+
+
+  /*
+    Pontos.
+  */
+
+  valores.forEach(
+    (valor, index) => {
+
+      const x =
+        margem +
+        (
+          index /
+          Math.max(valores.length - 1, 1)
+        ) *
+        (
+          w -
+          margem * 2
+        );
+
+
+      const y =
+        h -
+        margem -
+        (
+          (valor - menor) /
+          diferenca
+        ) *
+        (
+          h -
+          margem * 2
+        );
+
+
+      ctx.beginPath();
+
+      ctx.arc(
+        x,
+        y,
+        4,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fillStyle =
+        "#176bff";
+
+      ctx.fill();
+
+    }
+  );
+
+
+  /*
+    Valor atual.
+  */
+
+  const ultimo =
+    valores[valores.length - 1];
+
+
+  ctx.fillStyle =
+    "#101828";
+
+  ctx.font =
+    "bold 14px Arial";
+
+
+  ctx.fillText(
+    formatarMoeda(
+      ultimo,
+      "BRL"
+    ),
+    margem,
+    25
+  );
+
+
+  /*
+    Código da moeda.
+  */
+
+  ctx.fillStyle =
+    "#667085";
+
+  ctx.font =
+    "12px Arial";
+
+
+  ctx.fillText(
+    `1 ${codigo} em reais`,
+    margem,
+    43
+  );
+
+}
+
+
+/* =========================
+   SELETOR DO GRÁFICO
+========================= */
+
+const chartCurrency =
+  document.getElementById(
+    "chartCurrency"
+  );
+
+
+if (chartCurrency) {
+
+  chartCurrency.addEventListener(
+    "change",
+    function () {
+
+      carregarHistorico(
+        this.value
+      );
+
+    }
+  );
+
+
+  carregarHistorico(
+    chartCurrency.value
+  );
+
+}
+
+
+/* =========================
+   REDIMENSIONAR
+========================= */
+
+window.addEventListener(
+  "resize",
+  function () {
+
+    if (chartCurrency) {
+
+      carregarHistorico(
+        chartCurrency.value
+      );
+
+    }
+
+  }
+);
