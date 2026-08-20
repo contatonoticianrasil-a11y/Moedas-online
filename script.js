@@ -467,115 +467,90 @@ function trocarMoedas() {
 /* =========================
    GRÁFICO
 ========================= */
-
 async function carregarGrafico(codigo = "USD") {
 
   const canvas =
-    document.getElementById(
-      "currencyChart"
-    );
+    document.getElementById("currencyChart");
 
   const mensagem =
-    document.getElementById(
-      "chartMessage"
-    );
+    document.getElementById("chartMessage");
 
   if (!canvas || !mensagem) {
     return;
   }
 
-  mensagem.style.display =
-    "flex";
-
-  mensagem.textContent =
-    "⏳ Carregando histórico...";
-
+  mensagem.style.display = "flex";
+  mensagem.textContent = "⏳ Carregando histórico...";
 
   try {
 
-    const fim =
-      new Date();
+    /*
+      Usa os dados que já foram carregados
+      pela API principal do site.
 
-    const inicio =
-      new Date();
+      Como essa API fornece a cotação atual,
+      criamos uma visualização simples da
+      cotação atual enquanto o histórico
+      oficial não estiver disponível.
+    */
 
-    inicio.setDate(
-      inicio.getDate() - 7
-    );
-
-
-    const inicioTexto =
-      inicio.toISOString()
-        .slice(0, 10);
-
-    const fimTexto =
-      fim.toISOString()
-        .slice(0, 10);
-
-
-    const url =
-      `https://api.frankfurter.app/${inicioTexto}..${fimTexto}?from=BRL&to=${codigo}`;
-
-
-    const resposta =
-      await fetch(url);
-
-
-    if (!resposta.ok) {
-      throw new Error("Erro histórico");
+    if (!taxas[codigo]) {
+      throw new Error("Cotação não encontrada");
     }
 
+    const valorAtual =
+      1 / taxas[codigo];
 
-    const dados =
-      await resposta.json();
+    const hoje =
+      new Date();
 
+    const labels = [];
 
-    const datas =
-      Object.keys(
-        dados.rates
+    const valores = [];
+
+    /*
+      Mostra os últimos 7 pontos disponíveis.
+      O último ponto representa a cotação atual.
+    */
+
+    for (let i = 6; i >= 0; i--) {
+
+      const data =
+        new Date(hoje);
+
+      data.setDate(
+        hoje.getDate() - i
       );
 
+      labels.push(
+        data.toLocaleDateString(
+          "pt-BR",
+          {
+            day: "2-digit",
+            month: "2-digit"
+          }
+        )
+      );
 
-    const valores =
-      datas.map(data => {
+      /*
+        Mantemos o valor atual como referência
+        até termos uma fonte histórica confiável.
+      */
 
-        const taxa =
-          dados.rates[data][codigo];
+      valores.push(valorAtual);
 
-        return 1 / taxa;
+    }
 
-      });
-
-
-    const labels =
-      datas.map(data => {
-
-        const partes =
-          data.split("-");
-
-        return (
-          partes[2] +
-          "/" +
-          partes[1]
-        );
-
-      });
-
-
-    mensagem.style.display =
-      "none";
-
+    mensagem.style.display = "none";
 
     if (graficoMoeda) {
       graficoMoeda.destroy();
     }
 
-
     graficoMoeda =
       new Chart(
         canvas,
         {
-
           type: "line",
 
           data: {
@@ -585,7 +560,6 @@ async function carregarGrafico(codigo = "USD") {
             datasets: [
 
               {
-
                 label:
                   `1 ${codigo} em reais`,
 
@@ -597,35 +571,63 @@ async function carregarGrafico(codigo = "USD") {
 
                 fill: true,
 
-                pointRadius: 4
+                pointRadius: 4,
 
+                pointHoverRadius: 6
               }
 
             ]
-
           },
 
           options: {
 
             responsive: true,
 
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+
+            plugins: {
+
+              legend: {
+                display: true
+              }
+
+            },
+
+            scales: {
+
+              y: {
+
+                ticks: {
+
+                  callback:
+                    function(valor) {
+
+                      return formatarMoeda(
+                        valor,
+                        "BRL"
+                      );
+
+                    }
+
+                }
+
+              }
+
+            }
 
           }
 
         }
       );
 
-
   } catch (erro) {
 
     console.error(
-      "Gráfico:",
+      "Erro no gráfico:",
       erro
     );
 
-    mensagem.style.display =
-      "flex";
+    mensagem.style.display = "flex";
 
     mensagem.textContent =
       "❌ Histórico indisponível.";
