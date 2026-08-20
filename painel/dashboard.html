@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Gonçalves Câmbio | Gerenciar Anúncios</title>
+  <title>Gonçalves Câmbio | Painel Administrativo</title>
 
   <link rel="stylesheet" href="dashboard.css">
 
@@ -13,236 +13,451 @@
 
 <body>
 
-  <header class="topbar">
+  <div class="app">
 
-    <div class="logo-area">
-      <div class="logo-icon">💱</div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
 
-      <div>
-        <h1>Gonçalves Câmbio</h1>
-        <span>Painel de Publicidade</span>
+      <div class="brand">
+        <div class="brand-logo">💱</div>
+
+        <div>
+          <strong>Gonçalves</strong>
+          <span>Câmbio</span>
+        </div>
       </div>
+
+      <nav class="menu">
+
+        <a href="#inicio" class="menu-item active">
+          <span>📊</span>
+          Dashboard
+        </a>
+
+        <a href="#anuncios" class="menu-item">
+          <span>📢</span>
+          Anúncios
+        </a>
+
+        <a href="#cotacoes" class="menu-item">
+          <span>💰</span>
+          Cotações
+        </a>
+
+        <a href="#configuracoes" class="menu-item">
+          <span>⚙️</span>
+          Configurações
+        </a>
+
+      </nav>
+
+      <div class="sidebar-bottom">
+
+        <div class="connection">
+          <span class="online-dot"></span>
+          Sistema online
+        </div>
+
+        <button id="logoutBtn" class="logout-btn">
+          🚪 Sair
+        </button>
+
+      </div>
+
+    </aside>
+
+    <!-- CONTEÚDO -->
+    <main class="main">
+
+      <!-- HEADER -->
+      <header class="topbar">
+
+        <button id="menuBtn" class="mobile-menu">
+          ☰
+        </button>
+
+        <div>
+          <span class="page-label">PAINEL ADMINISTRATIVO</span>
+          <h1>Dashboard</h1>
+        </div>
+
+        <div class="user-area">
+
+          <div class="user-avatar">
+            👤
+          </div>
+
+          <div class="user-data">
+            <strong id="usuarioLogado">
+              Carregando...
+            </strong>
+
+            <span>Administrador</span>
+          </div>
+
+        </div>
+
+      </header>
+
+      <!-- CONTEÚDO -->
+      <div class="content">
+
+        <!-- BOAS-VINDAS -->
+        <section class="welcome">
+
+          <div>
+            <span class="welcome-tag">GONÇALVES CÂMBIO</span>
+
+            <h2>
+              Controle seu site em um só lugar.
+            </h2>
+
+            <p>
+              Gerencie anúncios, links e acompanhe
+              as principais informações do seu portal.
+            </p>
+          </div>
+
+          <div class="welcome-icon">
+            💱
+          </div>
+
+        </section>
+
+        <!-- CARDS -->
+        <section class="stats">
+
+          <div class="stat-card">
+
+            <div class="stat-icon green">
+              📢
+            </div>
+
+            <div>
+              <span>Anúncios ativos</span>
+              <strong id="totalAnuncios">0</strong>
+            </div>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-icon blue">
+              🔗
+            </div>
+
+            <div>
+              <span>Links cadastrados</span>
+              <strong id="totalLinks">0</strong>
+            </div>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-icon orange">
+              💰
+            </div>
+
+            <div>
+              <span>Dólar</span>
+              <strong id="valorDolar">--</strong>
+            </div>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-icon purple">
+              ₿
+            </div>
+
+            <div>
+              <span>Bitcoin</span>
+              <strong id="valorBitcoin">--</strong>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ANÚNCIOS -->
+        <section id="anuncios" class="panel-section">
+
+          <div class="section-header">
+
+            <div>
+              <span class="section-label">PUBLICIDADE</span>
+
+              <h2>Gerenciar anúncios</h2>
+
+              <p>
+                Cadastre propagandas que poderão aparecer
+                no site público.
+              </p>
+            </div>
+
+            <button id="novoAnuncioBtn" class="primary-btn">
+              ＋ Novo anúncio
+            </button>
+
+          </div>
+
+          <!-- FORMULÁRIO -->
+          <div id="anuncioForm" class="form-panel hidden">
+
+            <div class="form-header">
+              <div>
+                <h3>Novo anúncio</h3>
+                <p>Preencha os dados da propaganda.</p>
+              </div>
+
+              <button id="fecharForm" class="close-btn">
+                ×
+              </button>
+            </div>
+
+            <div class="form-grid">
+
+              <div class="input-group">
+                <label>Título do anúncio</label>
+
+                <input
+                  id="anuncioTitulo"
+                  type="text"
+                  placeholder="Ex.: Oferta especial"
+                >
+              </div>
+
+              <div class="input-group">
+                <label>Link da propaganda</label>
+
+                <input
+                  id="anuncioLink"
+                  type="url"
+                  placeholder="https://..."
+                >
+              </div>
+
+              <div class="input-group full">
+                <label>URL da imagem</label>
+
+                <input
+                  id="anuncioImagem"
+                  type="url"
+                  placeholder="https://site.com/imagem.jpg"
+                >
+              </div>
+
+              <div class="input-group">
+                <label>Status</label>
+
+                <select id="anuncioStatus">
+                  <option value="ativo">🟢 Ativo</option>
+                  <option value="inativo">⚪ Inativo</option>
+                </select>
+              </div>
+
+            </div>
+
+            <div class="form-actions">
+
+              <button id="cancelarAnuncio" class="secondary-btn">
+                Cancelar
+              </button>
+
+              <button id="salvarAnuncio" class="primary-btn">
+                💾 Salvar anúncio
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- LISTA -->
+          <div class="table-container">
+
+            <div class="table-title">
+              <h3>Seus anúncios</h3>
+
+              <button id="atualizarAnuncios" class="refresh-btn">
+                ↻ Atualizar
+              </button>
+            </div>
+
+            <div id="listaAnuncios" class="ads-list">
+
+              <div class="empty-state">
+                <div>📢</div>
+
+                <strong>
+                  Nenhum anúncio cadastrado
+                </strong>
+
+                <span>
+                  Clique em "Novo anúncio" para começar.
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- COTAÇÕES -->
+        <section id="cotacoes" class="panel-section">
+
+          <div class="section-header">
+
+            <div>
+              <span class="section-label">MERCADO</span>
+
+              <h2>Cotações</h2>
+
+              <p>
+                Informações atuais utilizadas no painel.
+              </p>
+            </div>
+
+            <button id="atualizarCotacoes" class="secondary-btn">
+              ↻ Atualizar
+            </button>
+
+          </div>
+
+          <div class="quotes-grid">
+
+            <div class="quote-card">
+              <span>🇺🇸 Dólar</span>
+              <strong id="quoteUSD">--</strong>
+              <small>USD / BRL</small>
+            </div>
+
+            <div class="quote-card">
+              <span>🇪🇺 Euro</span>
+              <strong id="quoteEUR">--</strong>
+              <small>EUR / BRL</small>
+            </div>
+
+            <div class="quote-card">
+              <span>🇬🇧 Libra</span>
+              <strong id="quoteGBP">--</strong>
+              <small>GBP / BRL</small>
+            </div>
+
+            <div class="quote-card">
+              <span>₿ Bitcoin</span>
+              <strong id="quoteBTC">--</strong>
+              <small>BTC / BRL</small>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- CONFIGURAÇÕES -->
+        <section id="configuracoes" class="panel-section">
+
+          <div class="section-header">
+
+            <div>
+              <span class="section-label">SISTEMA</span>
+
+              <h2>Configurações</h2>
+
+              <p>
+                Informações da sua conta administrativa.
+              </p>
+            </div>
+
+          </div>
+
+          <div class="settings-card">
+
+            <div class="setting-row">
+
+              <div>
+                <strong>Conta administrativa</strong>
+
+                <span id="emailConfiguracao">
+                  Carregando...
+                </span>
+              </div>
+
+              <span class="status-badge active">
+                Ativa
+              </span>
+
+            </div>
+
+            <div class="setting-row">
+
+              <div>
+                <strong>Supabase</strong>
+
+                <span>Banco de dados conectado</span>
+              </div>
+
+              <span class="status-badge active">
+                Online
+              </span>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- RODAPÉ -->
+        <footer>
+
+          <span>
+            © <span id="ano"></span> Gonçalves Câmbio
+          </span>
+
+          <span>
+            Painel Administrativo V1
+          </span>
+
+        </footer>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- MODAL DE CONFIRMAÇÃO -->
+  <div id="modal" class="modal hidden">
+
+    <div class="modal-box">
+
+      <div class="modal-icon">
+        🗑️
+      </div>
+
+      <h3>Excluir anúncio?</h3>
+
+      <p>
+        Essa ação não poderá ser desfeita.
+      </p>
+
+      <div class="modal-actions">
+
+        <button id="cancelarExclusao" class="secondary-btn">
+          Cancelar
+        </button>
+
+        <button id="confirmarExclusao" class="danger-btn">
+          Excluir
+        </button>
+
+      </div>
+
     </div>
 
-    <div class="top-actions">
-
-      <span id="usuarioLogado">
-        Carregando...
-      </span>
-
-      <button id="logoutBtn" class="logout-btn">
-        🚪 Sair
-      </button>
-
-    </div>
-
-  </header>
-
-
-  <main class="container">
-
-    <section class="page-title">
-
-      <div>
-        <h2>📢 Gerenciar anúncios</h2>
-
-        <p>
-          Cadastre os anúncios que aparecerão no seu site.
-        </p>
-      </div>
-
-      <button id="novoAnuncioBtn" class="primary-btn">
-        + Novo anúncio
-      </button>
-
-    </section>
-
-
-    <section id="formSection" class="panel-card hidden">
-
-      <div class="card-header">
-
-        <div>
-          <h3 id="formTitulo">
-            Novo anúncio
-          </h3>
-
-          <p>
-            Preencha os dados da publicidade.
-          </p>
-        </div>
-
-        <button id="cancelarBtn" class="cancel-btn">
-          Fechar
-        </button>
-
-      </div>
-
-
-      <form id="anuncioForm">
-
-        <input
-          type="hidden"
-          id="anuncioId"
-        >
-
-
-        <div class="form-group">
-
-          <label for="titulo">
-            Título do anúncio
-          </label>
-
-          <input
-            type="text"
-            id="titulo"
-            placeholder="Ex: Oferta especial"
-            maxlength="120"
-            required
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="imagem">
-            URL da imagem/banner
-          </label>
-
-          <input
-            type="url"
-            id="imagem"
-            placeholder="https://seusite.com/banner.jpg"
-          >
-
-          <small>
-            Cole aqui o endereço da imagem do anúncio.
-          </small>
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="link">
-            Link da propaganda
-          </label>
-
-          <input
-            type="url"
-            id="link"
-            placeholder="https://exemplo.com/oferta"
-            required
-          >
-
-          <small>
-            Quando a pessoa clicar no anúncio, será enviada para este endereço.
-          </small>
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="status">
-            Status
-          </label>
-
-          <select id="status">
-
-            <option value="true">
-              🟢 Ativo
-            </option>
-
-            <option value="false">
-              🔴 Desativado
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <button
-          type="submit"
-          id="salvarBtn"
-          class="primary-btn full"
-        >
-          💾 Salvar anúncio
-        </button>
-
-        <div id="formMessage" class="message"></div>
-
-      </form>
-
-    </section>
-
-
-    <section class="panel-card">
-
-      <div class="card-header">
-
-        <div>
-          <h3>📋 Seus anúncios</h3>
-
-          <p>
-            Anúncios cadastrados no sistema.
-          </p>
-        </div>
-
-        <button id="atualizarBtn" class="secondary-btn">
-          ↻ Atualizar
-        </button>
-
-      </div>
-
-
-      <div id="listaAnuncios" class="ads-list">
-
-        <div class="loading">
-          ⏳ Carregando anúncios...
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <section class="panel-card">
-
-      <div class="card-header">
-
-        <div>
-          <h3>👁️ Pré-visualização</h3>
-
-          <p>
-            Veja como o anúncio poderá aparecer para seus visitantes.
-          </p>
-        </div>
-
-      </div>
-
-      <div id="preview" class="preview">
-
-        <div class="preview-empty">
-          Nenhum anúncio selecionado.
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-
-  <footer>
-
-    © <span id="year"></span>
-    Gonçalves Câmbio
-
-  </footer>
-
+  </div>
 
   <script src="dashboard.js"></script>
 
