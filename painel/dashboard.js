@@ -1,584 +1,845 @@
 /* =========================================================
-   GONÇALVES CÂMBIO
-   DASHBOARD ADMINISTRATIVO - V1
+GONÇALVES CÂMBIO
+DASHBOARD ADMINISTRATIVO - V1
 ========================================================= */
 
 const SUPABASE_URL =
-  "https://skfodedzzdeptnksufuq.supabase.co";
+"https://skfodedzzdeptnksufuq.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_TDC6NwdHx1XuYhXcFzxkiQ_1N6lLkGE";
+"sb_publishable_TDC6NwdHx1XuYhXcFzxkiQ_1N6lLkGE";
 
 const supabaseClient =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-  );
-
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_PUBLISHABLE_KEY
+);
 
 /* =========================================================
-   APIs
+APIs
 ========================================================= */
 
 const API_URL =
-  "https://open.er-api.com/v6/latest/BRL";
+"https://open.er-api.com/v6/latest/BRL";
 
 const BITCOIN_API =
-  "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl&include_24hr_change=true";
-
+"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl&include_24hr_change=true";
 
 /* =========================================================
-   MOEDAS
+MOEDAS
 ========================================================= */
 
 const moedas = [
-  ["USD", "🇺🇸", "Dólar americano"],
-  ["EUR", "🇪🇺", "Euro"],
-  ["GBP", "🇬🇧", "Libra esterlina"],
-  ["ARS", "🇦🇷", "Peso argentino"],
-  ["PYG", "🇵🇾", "Guarani paraguaio"],
-  ["CLP", "🇨🇱", "Peso chileno"],
-  ["JPY", "🇯🇵", "Iene japonês"],
-  ["CAD", "🇨🇦", "Dólar canadense"]
+
+{
+codigo: "USD",
+nome: "Dólar americano",
+simbolo: "🇺🇸"
+},
+
+{
+codigo: "EUR",
+nome: "Euro",
+simbolo: "🇪🇺"
+},
+
+{
+codigo: "GBP",
+nome: "Libra esterlina",
+simbolo: "🇬🇧"
+},
+
+{
+codigo: "ARS",
+nome: "Peso argentino",
+simbolo: "🇦🇷"
+},
+
+{
+codigo: "PYG",
+nome: "Guarani paraguaio",
+simbolo: "🇵🇾"
+},
+
+{
+codigo: "CLP",
+nome: "Peso chileno",
+simbolo: "🇨🇱"
+},
+
+{
+codigo: "JPY",
+nome: "Iene japonês",
+simbolo: "🇯🇵"
+},
+
+{
+codigo: "CAD",
+nome: "Dólar canadense",
+simbolo: "🇨🇦"
+}
+
 ];
 
 let taxas = {};
 
-
 /* =========================================================
-   FORMATAÇÃO
+FORMATAÇÃO
 ========================================================= */
 
 function formatarBRL(valor) {
 
-  return new Intl.NumberFormat(
-    "pt-BR",
-    {
-      style: "currency",
-      currency: "BRL"
-    }
-  ).format(valor);
+if (!Number.isFinite(Number(valor))) {
+return "Indisponível";
+}
+
+return new Intl.NumberFormat(
+"pt-BR",
+{
+style: "currency",
+currency: "BRL",
+minimumFractionDigits: 2,
+maximumFractionDigits: 2
+}
+).format(Number(valor));
 
 }
 
-
 /* =========================================================
-   VERIFICAR LOGIN
+VERIFICAR LOGIN
 ========================================================= */
 
 async function verificarLogin() {
 
-  const {
-    data,
+try {
+
+const {
+  data,
+  error
+} =
+  await supabaseClient
+    .auth
+    .getSession();
+
+
+if (error) {
+
+  console.error(
+    "Erro ao verificar sessão:",
     error
-  } =
-    await supabaseClient
-      .auth
-      .getSession();
+  );
 
-  if (error) {
+  window.location.href =
+    "index.html";
 
-    console.error(
-      "Erro ao verificar login:",
-      error
-    );
-
-    window.location.href =
-      "index.html";
-
-    return;
-
-  }
-
-  if (
-    !data ||
-    !data.session
-  ) {
-
-    window.location.href =
-      "index.html";
-
-    return;
-
-  }
-
-  const usuario =
-    document.getElementById(
-      "usuarioLogado"
-    );
-
-  if (usuario) {
-
-    usuario.textContent =
-      data.session.user.email;
-
-  }
+  return false;
 
 }
 
 
+if (
+  !data ||
+  !data.session
+) {
+
+  window.location.href =
+    "index.html";
+
+  return false;
+
+}
+
+
+const usuario =
+  document.getElementById(
+    "usuarioLogado"
+  );
+
+
+if (usuario) {
+
+  usuario.textContent =
+    data.session.user.email ||
+    "Administrador";
+
+}
+
+
+return true;
+
+} catch (erro) {
+
+console.error(
+  "Erro de autenticação:",
+  erro
+);
+
+window.location.href =
+  "index.html";
+
+return false;
+
+}
+
+}
+
 /* =========================================================
-   CARREGAR COTAÇÕES
+CARREGAR COTAÇÕES
 ========================================================= */
 
 async function carregarCotacoes() {
 
-  const area =
-    document.getElementById(
-      "currencyCards"
-    );
+const area =
+document.getElementById(
+"currencyCards"
+);
 
-  if (!area) return;
+try {
+
+if (area) {
 
   area.innerHTML = `
     <div class="loading">
-      ⏳ Carregando cotações...
+      ⏳ Atualizando cotações...
     </div>
   `;
-
-  try {
-
-    const resposta =
-      await fetch(
-        API_URL,
-        {
-          cache: "no-store"
-        }
-      );
-
-    if (!resposta.ok) {
-
-      throw new Error(
-        "Erro HTTP " +
-        resposta.status
-      );
-
-    }
-
-    const dados =
-      await resposta.json();
-
-    if (
-      !dados ||
-      dados.result !== "success"
-    ) {
-
-      throw new Error(
-        "API indisponível"
-      );
-
-    }
-
-    taxas =
-      dados.rates;
-
-    mostrarMoedas();
-
-    atualizarDestaques();
-
-    atualizarHorario();
-
-  } catch (erro) {
-
-    console.error(
-      "Erro nas cotações:",
-      erro
-    );
-
-    area.innerHTML = `
-      <div class="error">
-        ❌ Não foi possível carregar as cotações.
-      </div>
-    `;
-
-  }
 
 }
 
 
-/* =========================================================
-   MOSTRAR MOEDAS
-========================================================= */
-
-function mostrarMoedas() {
-
-  const area =
-    document.getElementById(
-      "currencyCards"
-    );
-
-  if (!area) return;
-
-  area.innerHTML = "";
-
-  moedas.forEach(
-    function(moeda) {
-
-      const codigo =
-        moeda[0];
-
-      const bandeira =
-        moeda[1];
-
-      const nome =
-        moeda[2];
-
-      const taxa =
-        Number(
-          taxas[codigo]
-        );
-
-      if (
-        !Number.isFinite(taxa) ||
-        taxa <= 0
-      ) {
-
-        return;
-
-      }
-
-      const valor =
-        1 / taxa;
-
-      const card =
-        document.createElement(
-          "div"
-        );
-
-      card.className =
-        "currency-card";
-
-      card.innerHTML = `
-
-        <div class="currency-icon">
-          ${bandeira}
-        </div>
-
-        <div class="currency-info">
-
-          <h3>
-            ${nome}
-          </h3>
-
-          <span>
-            ${codigo}
-          </span>
-
-        </div>
-
-        <div class="currency-price">
-
-          ${formatarBRL(valor)}
-
-        </div>
-
-        <div class="currency-label">
-
-          1 ${codigo} em reais
-
-        </div>
-
-      `;
-
-      area.appendChild(
-        card
-      );
-
+const resposta =
+  await fetch(
+    API_URL,
+    {
+      cache: "no-store"
     }
+  );
+
+
+if (!resposta.ok) {
+
+  throw new Error(
+    "Erro HTTP " +
+    resposta.status
   );
 
 }
 
 
+const dados =
+  await resposta.json();
+
+
+if (
+  !dados ||
+  dados.result !== "success" ||
+  !dados.rates
+) {
+
+  throw new Error(
+    "API de moedas indisponível"
+  );
+
+}
+
+
+taxas =
+  dados.rates;
+
+
+mostrarMoedas();
+
+atualizarResumo();
+
+atualizarHorario();
+
+} catch (erro) {
+
+console.error(
+  "Erro nas cotações:",
+  erro
+);
+
+
+if (area) {
+
+  area.innerHTML = `
+    <div class="loading">
+      ❌ Não foi possível carregar
+      as cotações.
+    </div>
+  `;
+
+}
+
+}
+
+}
+
 /* =========================================================
-   DESTAQUES
+MOSTRAR MOEDAS
 ========================================================= */
 
-function atualizarDestaques() {
+function mostrarMoedas() {
 
-  const dolar =
-    document.getElementById(
-      "valorDolar"
+const area =
+document.getElementById(
+"currencyCards"
+);
+
+if (!area) return;
+
+area.innerHTML = "";
+
+moedas.forEach(
+function(moeda) {
+
+  const taxa =
+    Number(
+      taxas[moeda.codigo]
     );
 
-  const euro =
-    document.getElementById(
-      "valorEuro"
-    );
 
   if (
-    dolar &&
-    taxas.USD
+    !Number.isFinite(taxa) ||
+    taxa <= 0
   ) {
 
-    dolar.textContent =
-      formatarBRL(
-        1 / Number(taxas.USD)
-      );
+    return;
 
   }
 
+
+  /*
+    A API retorna quanto 1 BRL
+    vale na moeda estrangeira.
+
+    Para descobrir quanto vale
+    1 moeda estrangeira em BRL,
+    fazemos:
+
+    1 / taxa
+  */
+
+  const valor =
+    1 / taxa;
+
+
+  const card =
+    document.createElement(
+      "div"
+    );
+
+
+  card.className =
+    "currency-card";
+
+
+  card.innerHTML = `
+
+    <div class="currency-top">
+
+      <div class="currency-icon">
+        ${moeda.simbolo}
+      </div>
+
+      <div>
+
+        <div class="currency-name">
+          ${moeda.nome}
+        </div>
+
+        <span class="currency-code">
+          ${moeda.codigo}
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="currency-value">
+
+      ${formatarBRL(valor)}
+
+    </div>
+
+
+    <div class="currency-label">
+
+      1 ${moeda.codigo} em reais
+
+    </div>
+
+  `;
+
+
+  area.appendChild(
+    card
+  );
+
+}
+
+);
+
+}
+
+/* =========================================================
+ATUALIZAR RESUMO
+========================================================= */
+
+function atualizarResumo() {
+
+const resumo = [
+"USD",
+"EUR",
+"GBP"
+];
+
+resumo.forEach(
+function(codigo) {
+
+  const elemento =
+    document.getElementById(
+      "summary" + codigo
+    );
+
+
+  const taxa =
+    Number(
+      taxas[codigo]
+    );
+
+
   if (
-    euro &&
-    taxas.EUR
+    elemento &&
+    Number.isFinite(taxa) &&
+    taxa > 0
   ) {
 
-    euro.textContent =
+    elemento.textContent =
       formatarBRL(
-        1 / Number(taxas.EUR)
+        1 / taxa
       );
 
   }
 
 }
 
-
-/* =========================================================
-   BITCOIN
-========================================================= */
-
-async function carregarBitcoin() {
-
-  const valorBitcoin =
-    document.getElementById(
-      "valorBitcoin"
-    );
-
-  const variacaoBitcoin =
-    document.getElementById(
-      "variacaoBitcoin"
-    );
-
-  if (
-    !valorBitcoin
-  ) return;
-
-  try {
-
-    const resposta =
-      await fetch(
-        BITCOIN_API,
-        {
-          cache: "no-store"
-        }
-      );
-
-    if (!resposta.ok) {
-
-      throw new Error(
-        "Bitcoin HTTP " +
-        resposta.status
-      );
-
-    }
-
-    const dados =
-      await resposta.json();
-
-    const bitcoin =
-      dados.bitcoin;
-
-    if (!bitcoin) {
-
-      throw new Error(
-        "Bitcoin indisponível"
-      );
-
-    }
-
-    valorBitcoin.textContent =
-      formatarBRL(
-        Number(
-          bitcoin.brl
-        )
-      );
-
-    if (variacaoBitcoin) {
-
-      const variacao =
-        Number(
-          bitcoin.brl_24h_change || 0
-        );
-
-      const sinal =
-        variacao >= 0
-          ? "+"
-          : "";
-
-      variacaoBitcoin.textContent =
-        sinal +
-        variacao.toFixed(2) +
-        "% nas últimas 24h";
-
-    }
-
-  } catch (erro) {
-
-    console.error(
-      "Erro Bitcoin:",
-      erro
-    );
-
-    valorBitcoin.textContent =
-      "Indisponível";
-
-  }
+);
 
 }
 
-
 /* =========================================================
-   HORÁRIO
+ATUALIZAR HORÁRIO
 ========================================================= */
 
 function atualizarHorario() {
 
-  const elemento =
-    document.getElementById(
-      "ultimaAtualizacao"
-    );
+const elemento =
+document.getElementById(
+"lastUpdate"
+);
 
-  if (!elemento) return;
+if (!elemento) return;
 
-  elemento.textContent =
-    "Atualizado às " +
-    new Date().toLocaleTimeString(
-      "pt-BR",
-      {
-        hour: "2-digit",
-        minute: "2-digit"
-      }
+elemento.textContent =
+"Atualizado às " +
+new Date().toLocaleTimeString(
+"pt-BR",
+{
+hour: "2-digit",
+minute: "2-digit",
+second: "2-digit"
+}
+);
+
+}
+
+/* =========================================================
+BITCOIN
+========================================================= */
+
+async function carregarBitcoin() {
+
+const area =
+document.getElementById(
+"cryptoCards"
+);
+
+const resumo =
+document.getElementById(
+"summaryBTC"
+);
+
+try {
+
+if (area) {
+
+  area.innerHTML = `
+    <div class="loading">
+      ⏳ Carregando Bitcoin...
+    </div>
+  `;
+
+}
+
+
+const resposta =
+  await fetch(
+    BITCOIN_API,
+    {
+      cache: "no-store"
+    }
+  );
+
+
+if (!resposta.ok) {
+
+  throw new Error(
+    "Bitcoin HTTP " +
+    resposta.status
+  );
+
+}
+
+
+const dados =
+  await resposta.json();
+
+
+if (
+  !dados ||
+  !dados.bitcoin ||
+  !Number.isFinite(
+    Number(dados.bitcoin.brl)
+  )
+) {
+
+  throw new Error(
+    "Bitcoin indisponível"
+  );
+
+}
+
+
+const valor =
+  Number(
+    dados.bitcoin.brl
+  );
+
+
+const variacao =
+  Number(
+    dados.bitcoin.brl_24h_change || 0
+  );
+
+
+const sinal =
+  variacao >= 0
+    ? "+"
+    : "";
+
+
+if (resumo) {
+
+  resumo.textContent =
+    formatarBRL(
+      valor
     );
 
 }
 
 
+if (area) {
+
+  area.innerHTML = `
+
+    <div class="currency-card">
+
+      <div class="currency-top">
+
+        <div class="currency-icon">
+          ₿
+        </div>
+
+        <div>
+
+          <div class="currency-name">
+            Bitcoin
+          </div>
+
+          <span class="currency-code">
+            BTC
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="currency-value">
+
+        ${formatarBRL(valor)}
+
+      </div>
+
+
+      <div class="currency-label">
+
+        1 BTC em reais
+
+        <br><br>
+
+        <strong>
+
+          ${sinal}${variacao.toFixed(2)}%
+
+        </strong>
+
+        nas últimas 24h
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+} catch (erro) {
+
+console.error(
+  "Erro Bitcoin:",
+  erro
+);
+
+
+if (resumo) {
+
+  resumo.textContent =
+    "Indisponível";
+
+}
+
+
+if (area) {
+
+  area.innerHTML = `
+    <div class="loading">
+      ❌ Bitcoin indisponível.
+    </div>
+  `;
+
+}
+
+}
+
+}
+
 /* =========================================================
-   ATUALIZAR TUDO
+ATUALIZAR TUDO
 ========================================================= */
 
 async function atualizarTudo() {
 
-  const botao =
-    document.getElementById(
-      "refreshBtn"
-    );
+const botao =
+document.getElementById(
+"refreshBtn"
+);
 
-  if (botao) {
+if (botao) {
 
-    botao.disabled = true;
+botao.disabled =
+  true;
 
-    botao.textContent =
-      "⏳ Atualizando...";
-
-  }
-
-  await Promise.allSettled([
-
-    carregarCotacoes(),
-
-    carregarBitcoin()
-
-  ]);
-
-  if (botao) {
-
-    botao.disabled = false;
-
-    botao.textContent =
-      "↻ Atualizar";
-
-  }
+botao.textContent =
+  "⏳ Atualizando...";
 
 }
 
+await Promise.allSettled([
+
+carregarCotacoes(),
+
+carregarBitcoin()
+
+]);
+
+if (botao) {
+
+botao.disabled =
+  false;
+
+botao.textContent =
+  "↻ Atualizar";
+
+}
+
+}
 
 /* =========================================================
-   SAIR
+SAIR
 ========================================================= */
 
 async function sair() {
 
-  try {
+const botao =
+document.getElementById(
+"logoutBtn"
+);
 
-    await supabaseClient
-      .auth
-      .signOut();
+if (botao) {
 
-  } catch (erro) {
+botao.disabled =
+  true;
 
-    console.error(
-      "Erro ao sair:",
-      erro
-    );
+botao.textContent =
+  "Saindo...";
 
-  }
+}
 
-  window.location.href =
-    "index.html";
+try {
+
+const {
+  error
+} =
+  await supabaseClient
+    .auth
+    .signOut({
+      scope: "local"
+    });
+
+
+if (error) {
+
+  throw error;
+
+}
+
+} catch (erro) {
+
+console.error(
+  "Erro ao sair:",
+  erro
+);
+
+
+if (botao) {
+
+  botao.disabled =
+    false;
+
+  botao.textContent =
+    "🚪 Sair";
+
+}
+
+return;
+
+}
+
+window.location.href =
+"index.html";
+
+}
+
+/* =========================================================
+INICIALIZAÇÃO
+========================================================= */
+
+document.addEventListener(
+"DOMContentLoaded",
+async function() {
+
+/* ANO */
+
+const year =
+  document.getElementById(
+    "year"
+  );
+
+
+if (year) {
+
+  year.textContent =
+    new Date()
+      .getFullYear();
 
 }
 
 
-/* =========================================================
-   EVENTOS
-========================================================= */
+/* LOGIN */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  function() {
-
-    verificarLogin();
-
-    carregarCotacoes();
-
-    carregarBitcoin();
+const autenticado =
+  await verificarLogin();
 
 
-    const refresh =
-      document.getElementById(
-        "refreshBtn"
-      );
+if (!autenticado) {
 
-    if (refresh) {
+  return;
 
-      refresh.addEventListener(
-        "click",
-        atualizarTudo
-      );
-
-    }
+}
 
 
-    const logout =
-      document.getElementById(
-        "logoutBtn"
-      );
+/* BOTÃO ATUALIZAR */
 
-    if (logout) {
+const refresh =
+  document.getElementById(
+    "refreshBtn"
+  );
 
-      logout.addEventListener(
-        "click",
-        sair
-      );
 
-    }
+if (refresh) {
 
-  }
+  refresh.addEventListener(
+    "click",
+    atualizarTudo
+  );
+
+}
+
+
+/* BOTÃO SAIR */
+
+const logout =
+  document.getElementById(
+    "logoutBtn"
+  );
+
+
+if (logout) {
+
+  logout.addEventListener(
+    "click",
+    sair
+  );
+
+}
+
+
+/* COTAÇÕES */
+
+await carregarCotacoes();
+
+
+/* BITCOIN */
+
+await carregarBitcoin();
+
+}
 );
 
-
 /* =========================================================
-   ATUALIZAÇÃO AUTOMÁTICA
+ATUALIZAÇÃO AUTOMÁTICA
+A CADA 5 MINUTOS
 ========================================================= */
 
 setInterval(
-  function() {
+function() {
 
-    carregarCotacoes();
+atualizarTudo();
 
-    carregarBitcoin();
-
-  },
-  5 * 60 * 1000
+},
+5 * 60 * 1000
 );
