@@ -6,44 +6,66 @@
 
 body {
   font-family: Arial, sans-serif;
+  background: #f1f5f9;
+  color: #172033;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
+}
+
+
+/* ==============================
+   LOGIN
+============================== */
+
+.page {
   min-height: 100vh;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
+  padding: 20px;
+
   background:
     linear-gradient(
       135deg,
       #07111f,
-      #0d1b2e,
+      #0f2a20,
       #111827
     );
-
-  color: #fff;
-}
-
-.login-container {
-  width: 100%;
-  max-width: 420px;
-  padding: 20px;
 }
 
 .login-box {
   width: 100%;
+  max-width: 420px;
+
+  padding: 35px;
+
+  border-radius: 22px;
 
   background: rgba(255,255,255,0.08);
 
-  border: 1px solid rgba(255,255,255,0.12);
-
-  border-radius: 20px;
-
-  padding: 35px 30px;
-
-  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255,255,255,0.15);
 
   box-shadow:
-    0 20px 60px rgba(0,0,0,0.4);
+    0 25px 70px rgba(0,0,0,0.45);
+
+  color: white;
+
+  backdrop-filter: blur(15px);
 }
 
 .logo {
@@ -63,147 +85,497 @@ body {
   font-size: 32px;
 }
 
-h1 {
+.login-box h1 {
   text-align: center;
-  font-size: 24px;
+  font-size: 25px;
 }
 
-.subtitle {
+.login-box > p {
   text-align: center;
-
-  margin-top: 8px;
-  margin-bottom: 30px;
-
-  color: #aab4c3;
+  color: #b7c2d0;
+  margin: 8px 0 30px;
 }
 
-label {
+.login-box label {
+  display: block;
+  margin: 14px 0 7px;
+  font-size: 14px;
+}
+
+.login-box input {
+  width: 100%;
+  height: 50px;
+
+  border: 1px solid #334155;
+  border-radius: 10px;
+
+  padding: 0 14px;
+
+  background: #111827;
+  color: white;
+
+  outline: none;
+}
+
+.login-box input:focus {
+  border-color: #22c55e;
+}
+
+#loginBtn {
+  width: 100%;
+  height: 50px;
+
+  margin-top: 22px;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: #16a34a;
+  color: white;
+
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#loginBtn:hover {
+  background: #15803d;
+}
+
+#loginMessage,
+#formMessage {
+  min-height: 22px;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.error {
+  color: #dc2626;
+}
+
+.success {
+  color: #16a34a;
+}
+
+
+/* ==============================
+   TOPO
+============================== */
+
+.admin-page {
+  min-height: 100vh;
+}
+
+.topbar {
+  min-height: 75px;
+
+  padding: 15px 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  background: #07111f;
+  color: white;
+}
+
+.topbar strong {
+  display: block;
+  font-size: 20px;
+}
+
+.topbar span {
+  display: block;
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.top-actions #userEmail {
+  color: #cbd5e1;
+}
+
+.logout {
+  border: 0;
+  border-radius: 9px;
+
+  padding: 11px 16px;
+
+  background: #dc2626;
+  color: white;
+
+  font-weight: bold;
+}
+
+.logout:hover {
+  background: #b91c1c;
+}
+
+
+/* ==============================
+   CONTAINER
+============================== */
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+
+  margin: auto;
+
+  padding: 30px 20px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 25px;
+}
+
+.page-title h1 {
+  font-size: 30px;
+}
+
+.page-title p,
+.section-header p {
+  margin-top: 6px;
+  color: #64748b;
+}
+
+
+/* ==============================
+   CARDS
+============================== */
+
+.card {
+  background: white;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 16px;
+
+  padding: 25px;
+
+  margin-bottom: 25px;
+
+  box-shadow:
+    0 5px 20px rgba(15,23,42,0.05);
+}
+
+.card h2 {
+  margin-bottom: 6px;
+}
+
+
+/* ==============================
+   BOTÕES
+============================== */
+
+.primary,
+.secondary {
+  min-height: 44px;
+
+  padding: 0 17px;
+
+  border-radius: 9px;
+
+  font-weight: bold;
+
+  border: 0;
+}
+
+.primary {
+  background: #16a34a;
+  color: white;
+}
+
+.primary:hover {
+  background: #15803d;
+}
+
+.secondary {
+  background: #e2e8f0;
+  color: #172033;
+}
+
+.secondary:hover {
+  background: #cbd5e1;
+}
+
+
+/* ==============================
+   FORMULÁRIO
+============================== */
+
+.form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 20px;
+
+  margin-top: 20px;
+}
+
+.field.full {
+  grid-column: 1 / -1;
+}
+
+.field label {
   display: block;
 
   margin-bottom: 7px;
 
-  font-size: 14px;
+  font-weight: bold;
 
-  color: #dbe4ef;
+  font-size: 14px;
 }
 
-input {
+.field input,
+.field textarea,
+.field select {
   width: 100%;
 
-  height: 48px;
+  border: 1px solid #cbd5e1;
 
-  padding: 0 14px;
+  border-radius: 9px;
 
-  border-radius: 10px;
-
-  border: 1px solid #334155;
-
-  background: #111827;
-
-  color: white;
+  padding: 12px;
 
   outline: none;
 
-  font-size: 15px;
-
-  margin-bottom: 18px;
+  background: white;
 }
 
-input:focus {
-  border-color: #22c55e;
+.field textarea {
+  resize: vertical;
 }
 
-.password-box {
-  position: relative;
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: #16a34a;
 }
 
-.password-box input {
-  padding-right: 50px;
+.field small {
+  display: block;
+  margin-top: 5px;
+  color: #64748b;
 }
 
-.show-password {
-  position: absolute;
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
 
-  right: 10px;
-  top: 0;
+  gap: 10px;
 
-  height: 48px;
-
-  width: 42px;
-
-  border: 0;
-
-  background: transparent;
-
-  color: white;
-
-  cursor: pointer;
-
-  font-size: 18px;
+  margin-top: 25px;
 }
 
-.login-btn {
-  width: 100%;
 
-  height: 50px;
+/* ==============================
+   LISTA DE ANÚNCIOS
+============================== */
 
-  border: 0;
+.section-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 20px;
+}
+
+.anuncio-item {
+  display: grid;
+
+  grid-template-columns:
+    130px 1fr auto;
+
+  gap: 20px;
+
+  align-items: center;
+
+  padding: 18px 0;
+
+  border-top: 1px solid #e2e8f0;
+}
+
+.anuncio-image {
+  width: 130px;
+  height: 85px;
+
+  object-fit: cover;
 
   border-radius: 10px;
 
-  background: #16a34a;
+  background: #e2e8f0;
+}
 
-  color: white;
+.anuncio-image.placeholder {
+  display: flex;
 
-  font-size: 16px;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 30px;
+}
+
+.anuncio-info h3 {
+  margin-bottom: 7px;
+}
+
+.anuncio-info p {
+  color: #64748b;
+
+  font-size: 14px;
+
+  margin-bottom: 8px;
+}
+
+.anuncio-link {
+  color: #2563eb;
+
+  font-size: 13px;
+
+  word-break: break-all;
+}
+
+.status {
+  display: inline-block;
+
+  padding: 5px 9px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
 
   font-weight: bold;
 
-  cursor: pointer;
-
-  transition: 0.2s;
+  margin-top: 8px;
 }
 
-.login-btn:hover {
-  background: #15803d;
+.status.ativo {
+  background: #dcfce7;
+  color: #166534;
 }
 
-.login-btn:disabled {
-  opacity: 0.7;
-
-  cursor: not-allowed;
+.status.inativo {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
-.login-message {
-  min-height: 22px;
+.anuncio-actions {
+  display: flex;
 
-  margin-top: 18px;
+  gap: 8px;
+}
+
+.btn-edit,
+.btn-delete,
+.btn-toggle {
+  border: 0;
+
+  border-radius: 8px;
+
+  padding: 9px 11px;
+
+  font-weight: bold;
+}
+
+.btn-edit {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.btn-delete {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.btn-toggle {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.loading,
+.empty {
+  padding: 30px;
 
   text-align: center;
 
-  font-size: 14px;
+  color: #64748b;
 }
 
-.login-message.error {
-  color: #f87171;
+
+/* ==============================
+   RODAPÉ
+============================== */
+
+footer {
+  text-align: center;
+
+  padding: 25px;
+
+  color: #64748b;
+
+  font-size: 13px;
 }
 
-.login-message.success {
-  color: #4ade80;
-}
 
-@media (max-width: 480px) {
+/* ==============================
+   MOBILE
+============================== */
 
-  .login-container {
+@media (max-width: 700px) {
+
+  .topbar {
     padding: 15px;
+    align-items: flex-start;
   }
 
-  .login-box {
-    padding: 30px 22px;
+  .top-actions {
+    flex-direction: column;
+    align-items: flex-end;
   }
 
-  h1 {
-    font-size: 21px;
+  .page-title {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field.full {
+    grid-column: auto;
+  }
+
+  .anuncio-item {
+    grid-template-columns: 1fr;
+  }
+
+  .anuncio-image {
+    width: 100%;
+    height: 160px;
+  }
+
+  .anuncio-actions {
+    flex-wrap: wrap;
   }
 
 }
