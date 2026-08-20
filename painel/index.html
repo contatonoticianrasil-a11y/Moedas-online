@@ -1,151 +1,290 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <title>Gonçalves Câmbio | Painel</title>
 
-  <title>Gonçalves Câmbio | Painel Administrativo</title>
+  <link rel="stylesheet" href="painel.css">
 
-  <meta
-    name="description"
-    content="Painel administrativo do Gonçalves Câmbio"
-  >
-
-  <link
-    rel="stylesheet"
-    href="painel.css"
-  >
-
-  <!-- SUPABASE -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-  ></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-
 
 <body>
 
-  <main class="login-container">
+  <!-- ==============================
+       LOGIN
+  =============================== -->
+  <div id="loginPage" class="page">
 
-    <section
-      class="login-box"
-      aria-label="Login administrativo"
-    >
+    <div class="login-box">
 
-      <!-- LOGO -->
+      <div class="logo">💱</div>
 
-      <div
-        class="logo"
-        aria-hidden="true"
-      >
-        💱
-      </div>
+      <h1>Gonçalves Câmbio</h1>
 
+      <p>Painel Administrativo</p>
 
-      <!-- TÍTULO -->
+      <form id="loginForm">
 
-      <h1>
-        Gonçalves Câmbio
-      </h1>
-
-
-      <p class="subtitle">
-        Painel Administrativo
-      </p>
-
-
-      <!-- LOGIN -->
-
-      <form
-        id="loginForm"
-        autocomplete="on"
-      >
-
-        <!-- E-MAIL -->
-
-        <label for="email">
-          E-mail
-        </label>
+        <label>E-mail</label>
 
         <input
-          type="email"
           id="email"
-          name="email"
+          type="email"
           placeholder="Digite seu e-mail"
           required
-          autocomplete="email"
         >
 
+        <label>Senha</label>
 
-        <!-- SENHA -->
+        <input
+          id="password"
+          type="password"
+          placeholder="Digite sua senha"
+          required
+        >
 
-        <label for="password">
-          Senha
-        </label>
+        <button type="submit" id="loginBtn">
+          Entrar no painel
+        </button>
+
+        <div id="loginMessage"></div>
+
+      </form>
+
+    </div>
+
+  </div>
 
 
-        <div class="password-box">
+  <!-- ==============================
+       PAINEL
+  =============================== -->
+  <div id="adminPage" class="admin-page hidden">
 
-          <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="Digite sua senha"
-            required
-            autocomplete="current-password"
-          >
+    <header class="topbar">
+
+      <div>
+        <strong>💱 Gonçalves Câmbio</strong>
+        <span>Painel de Propagandas</span>
+      </div>
+
+      <div class="top-actions">
+
+        <span id="userEmail"></span>
+
+        <button id="logoutBtn" class="logout">
+          🚪 Sair
+        </button>
+
+      </div>
+
+    </header>
 
 
-          <button
-            type="button"
-            id="mostrarSenha"
-            class="show-password"
-            aria-label="Mostrar ou ocultar senha"
-          >
-            👁️
+    <main class="container">
+
+      <section class="page-title">
+
+        <div>
+          <h1>📢 Propagandas</h1>
+
+          <p>
+            Cadastre e controle as propagandas que aparecerão no site.
+          </p>
+        </div>
+
+        <button id="novoAnuncioBtn" class="primary">
+          ➕ Nova propaganda
+        </button>
+
+      </section>
+
+
+      <!-- ==============================
+           FORMULÁRIO
+      =============================== -->
+
+      <section id="formSection" class="card hidden">
+
+        <h2 id="formTitle">
+          ➕ Nova propaganda
+        </h2>
+
+        <form id="anuncioForm">
+
+          <input type="hidden" id="anuncioId">
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label>Título da propaganda</label>
+
+              <input
+                id="titulo"
+                type="text"
+                placeholder="Ex.: Oferta especial"
+                required
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>URL da imagem</label>
+
+              <input
+                id="imagem"
+                type="url"
+                placeholder="https://site.com/imagem.jpg"
+              >
+
+            </div>
+
+
+            <div class="field full">
+
+              <label>Link da propaganda</label>
+
+              <input
+                id="link"
+                type="url"
+                placeholder="https://site.com/oferta"
+                required
+              >
+
+            </div>
+
+
+            <div class="field full">
+
+              <label>Descrição</label>
+
+              <textarea
+                id="descricao"
+                rows="4"
+                placeholder="Descrição da propaganda"
+              ></textarea>
+
+            </div>
+
+
+            <div class="field">
+
+              <label>Status</label>
+
+              <select id="ativo">
+
+                <option value="true">
+                  🟢 Ativo
+                </option>
+
+                <option value="false">
+                  🔴 Inativo
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="field">
+
+              <label>Tempo para aparecer novamente</label>
+
+              <input
+                id="intervalo"
+                type="number"
+                min="0"
+                value="0"
+              >
+
+              <small>
+                Em minutos. 0 = sempre que a página abrir.
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-actions">
+
+            <button
+              type="button"
+              id="cancelarBtn"
+              class="secondary"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              id="salvarBtn"
+              class="primary"
+            >
+              💾 Salvar propaganda
+            </button>
+
+          </div>
+
+          <div id="formMessage"></div>
+
+        </form>
+
+      </section>
+
+
+      <!-- ==============================
+           LISTA
+      =============================== -->
+
+      <section class="card">
+
+        <div class="section-header">
+
+          <div>
+
+            <h2>📋 Propagandas cadastradas</h2>
+
+            <p>
+              Gerencie os anúncios do seu site.
+            </p>
+
+          </div>
+
+          <button id="atualizarBtn" class="secondary">
+            ↻ Atualizar
           </button>
 
         </div>
 
 
-        <!-- BOTÃO -->
+        <div id="anunciosLista">
 
-        <button
-          type="submit"
-          id="loginBtn"
-          class="login-btn"
-        >
-          Entrar no painel
-        </button>
+          <div class="loading">
+            ⏳ Carregando propagandas...
+          </div>
 
+        </div>
 
-        <!-- MENSAGEM -->
+      </section>
 
-        <div
-          id="loginMessage"
-          class="login-message"
-          role="alert"
-          aria-live="polite"
-        ></div>
-
-      </form>
-
-    </section>
-
-  </main>
+    </main>
 
 
-  <!-- SEU JAVASCRIPT -->
+    <footer>
+      © <span id="ano"></span> Gonçalves Câmbio
+    </footer>
+
+  </div>
+
 
   <script src="painel.js"></script>
 
 </body>
-
 </html>
