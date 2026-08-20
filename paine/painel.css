@@ -1,0 +1,1272 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+
+:root {
+
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+
+  --background: #f5f7fb;
+  --card: #ffffff;
+
+  --text: #111827;
+  --muted: #6b7280;
+
+  --border: #e5e7eb;
+
+  --success: #16a34a;
+  --danger: #dc2626;
+
+}
+
+
+body {
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  background:
+    var(--background);
+
+  color:
+    var(--text);
+
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+.login-screen {
+
+  min-height: 100vh;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  padding: 20px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f172a,
+      #1e3a8a
+    );
+
+}
+
+
+.login-card {
+
+  width: 100%;
+
+  max-width: 420px;
+
+  background: white;
+
+  border-radius: 20px;
+
+  padding: 35px;
+
+  box-shadow:
+    0 25px 70px
+    rgba(0,0,0,.25);
+
+}
+
+
+.login-logo {
+
+  width: 70px;
+
+  height: 70px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  margin: 0 auto 20px;
+
+  border-radius: 18px;
+
+  background:
+    #eff6ff;
+
+  font-size: 35px;
+
+}
+
+
+.login-card h1 {
+
+  text-align: center;
+
+  font-size: 25px;
+
+}
+
+
+.login-subtitle {
+
+  text-align: center;
+
+  color:
+    var(--muted);
+
+  margin:
+    8px 0 30px;
+
+}
+
+
+.form-group {
+
+  margin-bottom: 18px;
+
+}
+
+
+.form-group label {
+
+  display: block;
+
+  font-weight: 600;
+
+  margin-bottom: 7px;
+
+}
+
+
+.form-group input {
+
+  width: 100%;
+
+  padding: 13px 14px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 10px;
+
+  outline: none;
+
+  font-size: 15px;
+
+}
+
+
+.form-group input:focus {
+
+  border-color:
+    var(--primary);
+
+}
+
+
+.login-button {
+
+  width: 100%;
+
+  margin-top: 5px;
+
+}
+
+
+.login-message {
+
+  margin-top: 15px;
+
+  text-align: center;
+
+  color:
+    var(--danger);
+
+  font-size: 14px;
+
+}
+
+
+/* =====================================================
+   UTILITÁRIOS
+===================================================== */
+
+.hidden {
+
+  display: none !important;
+
+}
+
+
+.btn-primary {
+
+  border: none;
+
+  background:
+    var(--primary);
+
+  color: white;
+
+  padding:
+    11px 18px;
+
+  border-radius: 9px;
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+}
+
+
+.btn-primary:hover {
+
+  background:
+    var(--primary-dark);
+
+}
+
+
+.btn-primary:disabled {
+
+  opacity: .6;
+
+  cursor: not-allowed;
+
+}
+
+
+/* =====================================================
+   PAINEL
+===================================================== */
+
+.admin-panel {
+
+  min-height: 100vh;
+
+  display: flex;
+
+}
+
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
+
+.sidebar {
+
+  width: 250px;
+
+  min-height: 100vh;
+
+  background:
+    #0f172a;
+
+  color: white;
+
+  display: flex;
+
+  flex-direction: column;
+
+  position: fixed;
+
+  left: 0;
+
+  top: 0;
+
+  bottom: 0;
+
+}
+
+
+.sidebar-logo {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 25px 20px;
+
+  border-bottom:
+    1px solid
+    rgba(255,255,255,.08);
+
+}
+
+
+.logo-icon {
+
+  width: 45px;
+
+  height: 45px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background:
+    rgba(255,255,255,.1);
+
+  font-size: 24px;
+
+}
+
+
+.sidebar-logo strong {
+
+  display: block;
+
+  font-size: 17px;
+
+}
+
+
+.sidebar-logo span {
+
+  color:
+    #94a3b8;
+
+  font-size: 13px;
+
+}
+
+
+.sidebar-menu {
+
+  padding: 20px 12px;
+
+  flex: 1;
+
+}
+
+
+.menu-item {
+
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 13px 14px;
+
+  margin-bottom: 5px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #cbd5e1;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  font-size: 15px;
+
+}
+
+
+.menu-item:hover {
+
+  background:
+    rgba(255,255,255,.06);
+
+  color: white;
+
+}
+
+
+.menu-item.active {
+
+  background:
+    var(--primary);
+
+  color: white;
+
+}
+
+
+.sidebar-bottom {
+
+  padding: 15px;
+
+}
+
+
+.logout-button {
+
+  width: 100%;
+
+  padding: 12px;
+
+  border: none;
+
+  border-radius: 9px;
+
+  cursor: pointer;
+
+  background:
+    rgba(220,38,38,.15);
+
+  color:
+    #fca5a5;
+
+  font-weight: 600;
+
+}
+
+
+/* =====================================================
+   CONTEÚDO
+===================================================== */
+
+.main-content {
+
+  margin-left: 250px;
+
+  width: calc(100% - 250px);
+
+  min-height: 100vh;
+
+}
+
+
+.topbar {
+
+  height: 80px;
+
+  background: white;
+
+  border-bottom:
+    1px solid var(--border);
+
+  padding:
+    0 30px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+}
+
+
+.topbar h2 {
+
+  font-size: 21px;
+
+}
+
+
+.topbar p {
+
+  color:
+    var(--muted);
+
+  font-size: 13px;
+
+  margin-top: 4px;
+
+}
+
+
+.topbar-right {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 20px;
+
+}
+
+
+.current-time {
+
+  color:
+    var(--muted);
+
+  font-size: 14px;
+
+}
+
+
+.admin-user {
+
+  padding:
+    9px 13px;
+
+  border-radius: 9px;
+
+  background:
+    #f1f5f9;
+
+  font-size: 14px;
+
+}
+
+
+/* =====================================================
+   SEÇÕES
+===================================================== */
+
+.admin-section {
+
+  display: none;
+
+  padding: 30px;
+
+}
+
+
+.admin-section.active-section {
+
+  display: block;
+
+}
+
+
+.section-header {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 25px;
+
+}
+
+
+.section-header h3 {
+
+  font-size: 21px;
+
+  margin-bottom: 5px;
+
+}
+
+
+.section-header p {
+
+  color:
+    var(--muted);
+
+  font-size: 14px;
+
+}
+
+
+/* =====================================================
+   CARDS
+===================================================== */
+
+.stats-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 18px;
+
+  margin-bottom: 25px;
+
+}
+
+
+.stat-card {
+
+  background: white;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 14px;
+
+  padding: 20px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 15px;
+
+}
+
+
+.stat-icon {
+
+  width: 50px;
+
+  height: 50px;
+
+  border-radius: 12px;
+
+  background:
+    #eff6ff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 24px;
+
+}
+
+
+.stat-card span {
+
+  display: block;
+
+  color:
+    var(--muted);
+
+  font-size: 13px;
+
+  margin-bottom: 5px;
+
+}
+
+
+.stat-card strong {
+
+  font-size: 18px;
+
+}
+
+
+/* =====================================================
+   DASHBOARD
+===================================================== */
+
+.dashboard-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 20px;
+
+}
+
+
+.panel-card {
+
+  background: white;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 14px;
+
+  padding: 22px;
+
+  margin-bottom: 20px;
+
+}
+
+
+.panel-card-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 20px;
+
+}
+
+
+.panel-card-header h3 {
+
+  font-size: 17px;
+
+}
+
+
+.status-online {
+
+  color:
+    var(--success);
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+}
+
+
+.status-list > div {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  padding:
+    14px 0;
+
+  border-bottom:
+    1px solid var(--border);
+
+}
+
+
+.status-list > div:last-child {
+
+  border-bottom: none;
+
+}
+
+
+.status-list span {
+
+  color:
+    var(--muted);
+
+}
+
+
+.status-list strong {
+
+  font-size: 14px;
+
+}
+
+
+/* =====================================================
+   AÇÕES RÁPIDAS
+===================================================== */
+
+.quick-actions {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 10px;
+
+}
+
+
+.quick-button {
+
+  border:
+    1px solid var(--border);
+
+  background:
+    #f8fafc;
+
+  border-radius: 10px;
+
+  padding: 18px 10px;
+
+  cursor: pointer;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  align-items: center;
+
+}
+
+
+.quick-button:hover {
+
+  border-color:
+    var(--primary);
+
+}
+
+
+/* =====================================================
+   MOEDAS
+===================================================== */
+
+.currency-admin-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 18px;
+
+}
+
+
+.currency-admin-card {
+
+  background: white;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 14px;
+
+  padding: 20px;
+
+}
+
+
+.currency-admin-top {
+
+  display: flex;
+
+  gap: 12px;
+
+  align-items: center;
+
+}
+
+
+.currency-flag {
+
+  font-size: 30px;
+
+}
+
+
+.currency-admin-name {
+
+  font-weight: 600;
+
+}
+
+
+.currency-code {
+
+  color:
+    var(--muted);
+
+  font-size: 12px;
+
+}
+
+
+.currency-admin-value {
+
+  font-size: 24px;
+
+  font-weight: 700;
+
+  margin-top: 20px;
+
+}
+
+
+.currency-admin-label {
+
+  color:
+    var(--muted);
+
+  font-size: 13px;
+
+  margin-top: 5px;
+
+}
+
+
+/* =====================================================
+   BITCOIN
+===================================================== */
+
+.bitcoin-admin-card {
+
+  max-width: 600px;
+
+}
+
+
+.bitcoin-value {
+
+  font-size: 40px;
+
+  font-weight: 700;
+
+  margin-bottom: 10px;
+
+}
+
+
+.bitcoin-change {
+
+  font-size: 16px;
+
+  font-weight: 600;
+
+}
+
+
+.change-positive {
+
+  color:
+    var(--success);
+
+}
+
+
+.change-negative {
+
+  color:
+    var(--danger);
+
+}
+
+
+/* =====================================================
+   CONFIGURAÇÕES
+===================================================== */
+
+.setting-row {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 25px;
+
+  padding:
+    18px 0;
+
+  border-bottom:
+    1px solid var(--border);
+
+}
+
+
+.setting-row:last-of-type {
+
+  margin-bottom: 20px;
+
+}
+
+
+.setting-row strong {
+
+  display: block;
+
+  margin-bottom: 5px;
+
+}
+
+
+.setting-row p {
+
+  color:
+    var(--muted);
+
+  font-size: 13px;
+
+}
+
+
+.setting-input,
+.setting-row select {
+
+  width: 280px;
+
+  padding: 11px 12px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 9px;
+
+  background: white;
+
+}
+
+
+/* =====================================================
+   SWITCH
+===================================================== */
+
+.switch {
+
+  position: relative;
+
+  width: 48px;
+
+  height: 26px;
+
+}
+
+
+.switch input {
+
+  opacity: 0;
+
+  width: 0;
+
+  height: 0;
+
+}
+
+
+.slider {
+
+  position: absolute;
+
+  inset: 0;
+
+  cursor: pointer;
+
+  background:
+    #cbd5e1;
+
+  border-radius: 30px;
+
+}
+
+
+.slider:before {
+
+  content: "";
+
+  position: absolute;
+
+  width: 20px;
+
+  height: 20px;
+
+  left: 3px;
+
+  top: 3px;
+
+  background: white;
+
+  border-radius: 50%;
+
+  transition: .2s;
+
+}
+
+
+.switch input:checked + .slider {
+
+  background:
+    var(--primary);
+
+}
+
+
+.switch input:checked + .slider:before {
+
+  transform:
+    translateX(22px);
+
+}
+
+
+/* =====================================================
+   MENSAGENS
+===================================================== */
+
+.loading-box {
+
+  background: white;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 14px;
+
+  padding: 30px;
+
+  text-align: center;
+
+  color:
+    var(--muted);
+
+}
+
+
+.save-message {
+
+  margin-top: 15px;
+
+  font-size: 14px;
+
+  color:
+    var(--success);
+
+}
+
+
+/* =====================================================
+   RESPONSIVO
+===================================================== */
+
+@media (max-width: 1100px) {
+
+  .stats-grid {
+
+    grid-template-columns:
+      repeat(2, 1fr);
+
+  }
+
+
+  .currency-admin-grid {
+
+    grid-template-columns:
+      repeat(2, 1fr);
+
+  }
+
+}
+
+
+@media (max-width: 800px) {
+
+  .sidebar {
+
+    width: 70px;
+
+  }
+
+
+  .sidebar-logo div:not(.logo-icon),
+  .menu-item span,
+  .logout-button {
+
+    display: none;
+
+  }
+
+
+  .sidebar-logo {
+
+    justify-content: center;
+
+  }
+
+
+  .menu-item {
+
+    justify-content: center;
+
+  }
+
+
+  .main-content {
+
+    margin-left: 70px;
+
+    width:
+      calc(100% - 70px);
+
+  }
+
+
+  .dashboard-grid {
+
+    grid-template-columns: 1fr;
+
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .admin-section {
+
+    padding: 18px;
+
+  }
+
+
+  .topbar {
+
+    padding:
+      0 18px;
+
+  }
+
+
+  .topbar-right {
+
+    display: none;
+
+  }
+
+
+  .stats-grid {
+
+    grid-template-columns: 1fr;
+
+  }
+
+
+  .currency-admin-grid {
+
+    grid-template-columns: 1fr;
+
+  }
+
+
+  .section-header {
+
+    align-items: flex-start;
+
+    gap: 15px;
+
+    flex-direction: column;
+
+  }
+
+
+  .setting-row {
+
+    align-items: flex-start;
+
+    flex-direction: column;
+
+  }
+
+
+  .setting-input,
+  .setting-row select {
+
+    width: 100%;
+
+  }
+
+}
