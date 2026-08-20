@@ -605,3 +605,20 @@ select {
   font-size: 14px;
   pointer-events: none;
 }
+/* =========================================================
+   TAMANHO DO GRÁFICO - GONÇALVES CÂMBIO
+========================================================= */
+
+#currencyChart {
+  width: 100% !important;
+  height: 180px !important;
+}
+
+/* CELULAR */
+@media (max-width: 600px) {
+
+  #currencyChart {
+    height: 150px !important;
+  }
+
+}
