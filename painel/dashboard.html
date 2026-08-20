@@ -1,393 +1,250 @@
-<!DOCTYPE html><html lang="pt-BR"><head>
-  <meta charset="UTF-8"><meta
-name="viewport"
-content="width=device-width, initial-scale=1.0"
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-«»
+  <title>Gonçalves Câmbio | Gerenciar Anúncios</title>
 
-  <title>Gonçalves Câmbio | Dashboard</title><meta
-name="description"
-content="Painel administrativo Gonçalves Câmbio"
+  <link rel="stylesheet" href="dashboard.css">
 
-«»
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
 
-  <!-- CSS DO DASHBOARD -->  <link
-    rel="stylesheet"
-    href="dashboard.css"
-  >  <!-- SUPABASE -->  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-  ></script></head><body>  <!-- =====================================================
-       PAINEL
-  ====================================================== -->  <div
-    id="dashboard"
-    class="dashboard"
-  ><!-- ===================================================
-     TOPO
-==================================================== -->
+<body>
 
-<header class="dashboard-header">
+  <header class="topbar">
 
-  <div class="brand">
+    <div class="logo-area">
+      <div class="logo-icon">💱</div>
 
-    <div class="brand-icon">
-      💱
+      <div>
+        <h1>Gonçalves Câmbio</h1>
+        <span>Painel de Publicidade</span>
+      </div>
     </div>
 
-    <div>
+    <div class="top-actions">
 
-      <h1>
-        Gonçalves Câmbio
-      </h1>
-
-      <span>
-        Painel Administrativo
+      <span id="usuarioLogado">
+        Carregando...
       </span>
 
-    </div>
-
-  </div>
-
-  <div class="header-right">
-
-    <div
-      id="usuarioLogado"
-      class="user-info"
-    >
-      Carregando...
-    </div>
-
-    <button
-      id="logoutBtn"
-      class="logout-btn"
-      type="button"
-    >
-      🚪 Sair
-    </button>
-
-  </div>
-
-</header>
-
-
-<!-- ===================================================
-     CONTEÚDO
-==================================================== -->
-
-<main class="dashboard-content">
-
-  <!-- TÍTULO -->
-
-  <section class="welcome-section">
-
-    <div>
-
-      <h2>
-        Dashboard
-      </h2>
-
-      <p>
-        Acompanhe as principais cotações
-        em tempo real.
-      </p>
+      <button id="logoutBtn" class="logout-btn">
+        🚪 Sair
+      </button>
 
     </div>
 
-    <button
-      id="refreshBtn"
-      class="refresh-btn"
-      type="button"
-    >
-      ↻ Atualizar
-    </button>
-
-  </section>
+  </header>
 
 
-  <!-- =================================================
-       RESUMO
-  ================================================== -->
+  <main class="container">
 
-  <section class="summary-grid">
-
-    <div class="summary-card">
-
-      <div class="summary-icon">
-        🇺🇸
-      </div>
+    <section class="page-title">
 
       <div>
-
-        <span>
-          Dólar
-        </span>
-
-        <strong id="summaryUSD">
-          Carregando...
-        </strong>
-
-      </div>
-
-    </div>
-
-
-    <div class="summary-card">
-
-      <div class="summary-icon">
-        🇪🇺
-      </div>
-
-      <div>
-
-        <span>
-          Euro
-        </span>
-
-        <strong id="summaryEUR">
-          Carregando...
-        </strong>
-
-      </div>
-
-    </div>
-
-
-    <div class="summary-card">
-
-      <div class="summary-icon">
-        🇬🇧
-      </div>
-
-      <div>
-
-        <span>
-          Libra
-        </span>
-
-        <strong id="summaryGBP">
-          Carregando...
-        </strong>
-
-      </div>
-
-    </div>
-
-
-    <div class="summary-card">
-
-      <div class="summary-icon">
-        ₿
-      </div>
-
-      <div>
-
-        <span>
-          Bitcoin
-        </span>
-
-        <strong id="summaryBTC">
-          Carregando...
-        </strong>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- =================================================
-       ANÚNCIO
-  ================================================== -->
-
-  <section class="advertisement-section">
-
-    <div class="section-title">
-
-      <div>
-
-        <h2>
-          📢 Anúncio
-        </h2>
+        <h2>📢 Gerenciar anúncios</h2>
 
         <p>
-          Espaço reservado para publicidade.
+          Cadastre os anúncios que aparecerão no seu site.
         </p>
+      </div>
+
+      <button id="novoAnuncioBtn" class="primary-btn">
+        + Novo anúncio
+      </button>
+
+    </section>
+
+
+    <section id="formSection" class="panel-card hidden">
+
+      <div class="card-header">
+
+        <div>
+          <h3 id="formTitulo">
+            Novo anúncio
+          </h3>
+
+          <p>
+            Preencha os dados da publicidade.
+          </p>
+        </div>
+
+        <button id="cancelarBtn" class="cancel-btn">
+          Fechar
+        </button>
 
       </div>
 
-    </div>
 
-    <div
-      id="advertisement"
-      class="advertisement"
-    >
+      <form id="anuncioForm">
 
-      <div class="advertisement-icon">
-        📢
-      </div>
-
-      <strong>
-        Espaço publicitário
-      </strong>
-
-      <span>
-        Seu anúncio poderá aparecer aqui.
-      </span>
-
-    </div>
-
-  </section>
+        <input
+          type="hidden"
+          id="anuncioId"
+        >
 
 
-  <!-- =================================================
-       COTAÇÕES
-  ================================================== -->
+        <div class="form-group">
 
-  <section class="quotes-section">
+          <label for="titulo">
+            Título do anúncio
+          </label>
 
-    <div class="section-title">
+          <input
+            type="text"
+            id="titulo"
+            placeholder="Ex: Oferta especial"
+            maxlength="120"
+            required
+          >
 
-      <div>
-
-        <h2>
-          💰 Cotações das moedas
-        </h2>
-
-        <p>
-          Valor de 1 unidade da moeda
-          convertido para Real.
-        </p>
-
-      </div>
-
-      <span
-        id="lastUpdate"
-        class="last-update"
-      >
-        Aguardando atualização...
-      </span>
-
-    </div>
-
-    <div
-      id="currencyCards"
-      class="currency-grid"
-    >
-
-      <div class="loading">
-        ⏳ Carregando cotações...
-      </div>
-
-    </div>
-
-  </section>
+        </div>
 
 
-  <!-- =================================================
-       BITCOIN
-  ================================================== -->
+        <div class="form-group">
 
-  <section class="bitcoin-section">
+          <label for="imagem">
+            URL da imagem/banner
+          </label>
 
-    <div class="section-title">
+          <input
+            type="url"
+            id="imagem"
+            placeholder="https://seusite.com/banner.jpg"
+          >
 
-      <div>
+          <small>
+            Cole aqui o endereço da imagem do anúncio.
+          </small>
 
-        <h2>
-          ₿ Bitcoin
-        </h2>
-
-        <p>
-          Cotação atual do Bitcoin em reais.
-        </p>
-
-      </div>
-
-    </div>
-
-    <div
-      id="cryptoCards"
-      class="currency-grid"
-    >
-
-      <div class="loading">
-        ⏳ Carregando Bitcoin...
-      </div>
-
-    </div>
-
-  </section>
+        </div>
 
 
-  <!-- =================================================
-       STATUS
-  ================================================== -->
+        <div class="form-group">
 
-  <section class="status-section">
+          <label for="link">
+            Link da propaganda
+          </label>
 
-    <div class="status-card">
+          <input
+            type="url"
+            id="link"
+            placeholder="https://exemplo.com/oferta"
+            required
+          >
 
-      <div class="status-dot"></div>
+          <small>
+            Quando a pessoa clicar no anúncio, será enviada para este endereço.
+          </small>
 
-      <div>
+        </div>
 
-        <strong>
-          Sistema online
-        </strong>
 
-        <span>
-          Gonçalves Câmbio funcionando normalmente.
-        </span>
+        <div class="form-group">
+
+          <label for="status">
+            Status
+          </label>
+
+          <select id="status">
+
+            <option value="true">
+              🟢 Ativo
+            </option>
+
+            <option value="false">
+              🔴 Desativado
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <button
+          type="submit"
+          id="salvarBtn"
+          class="primary-btn full"
+        >
+          💾 Salvar anúncio
+        </button>
+
+        <div id="formMessage" class="message"></div>
+
+      </form>
+
+    </section>
+
+
+    <section class="panel-card">
+
+      <div class="card-header">
+
+        <div>
+          <h3>📋 Seus anúncios</h3>
+
+          <p>
+            Anúncios cadastrados no sistema.
+          </p>
+        </div>
+
+        <button id="atualizarBtn" class="secondary-btn">
+          ↻ Atualizar
+        </button>
 
       </div>
 
-    </div>
 
+      <div id="listaAnuncios" class="ads-list">
 
-    <div class="status-card">
-
-      <div class="status-icon">
-        🔄
-      </div>
-
-      <div>
-
-        <strong>
-          Atualização automática
-        </strong>
-
-        <span>
-          As cotações são atualizadas
-          automaticamente.
-        </span>
+        <div class="loading">
+          ⏳ Carregando anúncios...
+        </div>
 
       </div>
 
-    </div>
-
-  </section>
-
-</main>
+    </section>
 
 
-<!-- ===================================================
-     RODAPÉ
-==================================================== -->
+    <section class="panel-card">
 
-<footer class="dashboard-footer">
+      <div class="card-header">
 
-  <p>
-    ©
-    <span id="year"></span>
+        <div>
+          <h3>👁️ Pré-visualização</h3>
+
+          <p>
+            Veja como o anúncio poderá aparecer para seus visitantes.
+          </p>
+        </div>
+
+      </div>
+
+      <div id="preview" class="preview">
+
+        <div class="preview-empty">
+          Nenhum anúncio selecionado.
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+
+    © <span id="year"></span>
     Gonçalves Câmbio
-  </p>
 
-  <span>
-    Painel Administrativo
-  </span>
+  </footer>
 
-</footer>
 
-  </div>  <!-- =====================================================
-       JAVASCRIPT
-  ====================================================== -->  <script src="dashboard.js"></script></body></html>
+  <script src="dashboard.js"></script>
+
+</body>
+</html>
