@@ -1,7 +1,7 @@
 /* =========================================================
    GONÇALVES CÂMBIO
    PAINEL ADMINISTRATIVO
-   LOGIN SUPABASE
+   LOGIN SUPABASE - V1
 ========================================================= */
 
 
@@ -15,6 +15,10 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_TDC6NwdHx1XuYhXcFzxkiQ_1N6lLkGE";
 
+
+/* =========================================================
+   CONEXÃO SUPABASE
+========================================================= */
 
 const supabaseClient =
   window.supabase.createClient(
@@ -57,12 +61,10 @@ function mostrarMensagem(
 
   if (!loginMessage) return;
 
-  loginMessage.textContent =
-    texto;
+  loginMessage.textContent = texto;
 
   loginMessage.className =
     "login-message " + tipo;
-
 }
 
 
@@ -74,30 +76,38 @@ if (mostrarSenha) {
 
   mostrarSenha.addEventListener(
     "click",
-    function() {
+    function () {
 
       if (
         passwordInput.type === "password"
       ) {
 
-        passwordInput.type =
-          "text";
+        passwordInput.type = "text";
 
-        mostrarSenha.textContent =
-          "🙈";
+        mostrarSenha.textContent = "🙈";
 
       } else {
 
-        passwordInput.type =
-          "password";
+        passwordInput.type = "password";
 
-        mostrarSenha.textContent =
-          "👁️";
+        mostrarSenha.textContent = "👁️";
 
       }
 
     }
   );
+
+}
+
+
+/* =========================================================
+   ABRIR DASHBOARD
+========================================================= */
+
+function abrirPainel() {
+
+  window.location.href =
+    "dashboard.html";
 
 }
 
@@ -137,7 +147,7 @@ async function verificarSessao() {
     ) {
 
       console.log(
-        "Usuário já autenticado."
+        "Usuário já está autenticado."
       );
 
       abrirPainel();
@@ -147,7 +157,7 @@ async function verificarSessao() {
   } catch (erro) {
 
     console.error(
-      "Erro na sessão:",
+      "Erro inesperado:",
       erro
     );
 
@@ -164,7 +174,7 @@ if (loginForm) {
 
   loginForm.addEventListener(
     "submit",
-    async function(event) {
+    async function (event) {
 
       event.preventDefault();
 
@@ -176,10 +186,11 @@ if (loginForm) {
         passwordInput.value;
 
 
-      if (
-        !email ||
-        !password
-      ) {
+      /* =========================
+         VALIDAÇÃO
+      ========================= */
+
+      if (!email || !password) {
 
         mostrarMensagem(
           "Digite seu e-mail e sua senha."
@@ -190,20 +201,23 @@ if (loginForm) {
       }
 
 
-      loginBtn.disabled =
-        true;
+      /* =========================
+         BOTÃO
+      ========================= */
+
+      loginBtn.disabled = true;
 
       loginBtn.textContent =
         "Entrando...";
 
-
-      mostrarMensagem(
-        "",
-        ""
-      );
+      mostrarMensagem("");
 
 
       try {
+
+        /* =========================
+           LOGIN SUPABASE
+        ========================= */
 
         const {
           data,
@@ -213,19 +227,21 @@ if (loginForm) {
             .auth
             .signInWithPassword({
 
-              email:
-                email,
+              email: email,
 
-              password:
-                password
+              password: password
 
             });
 
 
+        /* =========================
+           ERRO
+        ========================= */
+
         if (error) {
 
           console.error(
-            "Erro de login:",
+            "Erro Supabase:",
             error
           );
 
@@ -235,8 +251,7 @@ if (loginForm) {
           );
 
 
-          loginBtn.disabled =
-            false;
+          loginBtn.disabled = false;
 
           loginBtn.textContent =
             "Entrar no painel";
@@ -245,6 +260,10 @@ if (loginForm) {
 
         }
 
+
+        /* =========================
+           SESSÃO
+        ========================= */
 
         if (
           !data ||
@@ -252,12 +271,11 @@ if (loginForm) {
         ) {
 
           mostrarMensagem(
-            "Não foi possível criar a sessão."
+            "Não foi possível iniciar a sessão."
           );
 
 
-          loginBtn.disabled =
-            false;
+          loginBtn.disabled = false;
 
           loginBtn.textContent =
             "Entrar no painel";
@@ -266,6 +284,10 @@ if (loginForm) {
 
         }
 
+
+        /* =========================
+           SUCESSO
+        ========================= */
 
         mostrarMensagem(
           "Login realizado com sucesso!",
@@ -274,14 +296,13 @@ if (loginForm) {
 
 
         setTimeout(
-          function() {
+          function () {
 
             abrirPainel();
 
           },
           500
         );
-
 
       } catch (erro) {
 
@@ -292,12 +313,11 @@ if (loginForm) {
 
 
         mostrarMensagem(
-          "Ocorreu um erro. Tente novamente."
+          "Erro de conexão. Tente novamente."
         );
 
 
-        loginBtn.disabled =
-          false;
+        loginBtn.disabled = false;
 
         loginBtn.textContent =
           "Entrar no painel";
@@ -311,28 +331,16 @@ if (loginForm) {
 
 
 /* =========================================================
-   ABRIR PAINEL
-========================================================= */
-
-function abrirPainel() {
-
-  window.location.href =
-    "dashboard.html";
-
-}
-
-
-/* =========================================================
-   OBSERVAR ALTERAÇÕES DE LOGIN
+   OBSERVAR AUTENTICAÇÃO
 ========================================================= */
 
 supabaseClient
   .auth
   .onAuthStateChange(
-    function(event, session) {
+    function (event, session) {
 
       console.log(
-        "Auth:",
+        "Supabase Auth:",
         event
       );
 
@@ -355,4 +363,15 @@ supabaseClient
    INICIAR
 ========================================================= */
 
-verificarSessao();
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+
+    console.log(
+      "Gonçalves Câmbio - Login iniciado."
+    );
+
+    verificarSessao();
+
+  }
+);
