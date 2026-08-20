@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="robots"
+    content="noindex, nofollow"
+  >
+
+  <title>Painel de Controle | Gonçalves Câmbio</title>
+
+  <link
+    rel="stylesheet"
+    href="painel.css"
+  >
+</head>
+
+<body>
+
+  <!-- =====================================================
+       LOGIN
+  ====================================================== -->
+
+  <section
+    id="loginScreen"
+    class="login-screen"
+  >
+
+    <div class="login-card">
+
+      <div class="login-logo">
+        💱
+      </div>
+
+      <h1>Gonçalves Câmbio</h1>
+
+      <p class="login-subtitle">
+        Painel de Controle
+      </p>
+
+      <form id="loginForm">
+
+        <div class="form-group">
+
+          <label for="loginEmail">
+            E-mail
+          </label>
+
+          <input
+            type="email"
+            id="loginEmail"
+            placeholder="Digite seu e-mail"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="loginPassword">
+            Senha
+          </label>
+
+          <input
+            type="password"
+            id="loginPassword"
+            placeholder="Digite sua senha"
+            required
+          >
+
+        </div>
+
+
+        <button
+          type="submit"
+          class="btn-primary login-button"
+        >
+          Entrar no painel
+        </button>
+
+        <div
+          id="loginMessage"
+          class="login-message"
+        ></div>
+
+      </form>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       PAINEL
+  ====================================================== -->
+
+  <div
+    id="adminPanel"
+    class="admin-panel hidden"
+  >
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+      <div class="sidebar-logo">
+
+        <div class="logo-icon">
+          💱
+        </div>
+
+        <div>
+          <strong>Gonçalves</strong>
+          <span>Câmbio</span>
+        </div>
+
+      </div>
+
+
+      <nav class="sidebar-menu">
+
+        <button
+          class="menu-item active"
+          data-section="dashboard"
+        >
+          📊
+          <span>Dashboard</span>
+        </button>
+
+
+        <button
+          class="menu-item"
+          data-section="moedas"
+        >
+          💰
+          <span>Moedas</span>
+        </button>
+
+
+        <button
+          class="menu-item"
+          data-section="bitcoin"
+        >
+          ₿
+          <span>Bitcoin</span>
+        </button>
+
+
+        <button
+          class="menu-item"
+          data-section="anuncios"
+        >
+          📢
+          <span>Anúncios</span>
+        </button>
+
+
+        <button
+          class="menu-item"
+          data-section="configuracoes"
+        >
+          ⚙️
+          <span>Configurações</span>
+        </button>
+
+      </nav>
+
+
+      <div class="sidebar-bottom">
+
+        <button
+          id="logoutButton"
+          class="logout-button"
+        >
+          🚪 Sair
+        </button>
+
+      </div>
+
+    </aside>
+
+
+    <!-- CONTEÚDO -->
+
+    <main class="main-content">
+
+
+      <!-- HEADER -->
+
+      <header class="topbar">
+
+        <div>
+
+          <h2 id="pageTitle">
+            Dashboard
+          </h2>
+
+          <p>
+            Controle do Gonçalves Câmbio
+          </p>
+
+        </div>
+
+
+        <div class="topbar-right">
+
+          <div
+            id="currentTime"
+            class="current-time"
+          >
+            --:--
+          </div>
+
+          <div class="admin-user">
+            👤 Administrador
+          </div>
+
+        </div>
+
+      </header>
+
+
+      <!-- =================================================
+           DASHBOARD
+      ================================================== -->
+
+      <section
+        id="section-dashboard"
+        class="admin-section active-section"
+      >
+
+        <div class="section-header">
+
+          <div>
+            <h3>Visão geral</h3>
+
+            <p>
+              Acompanhe o funcionamento do seu site.
+            </p>
+          </div>
+
+          <button
+            id="refreshDashboard"
+            class="btn-primary"
+          >
+            ↻ Atualizar
+          </button>
+
+        </div>
+
+
+        <div class="stats-grid">
+
+          <div class="stat-card">
+
+            <div class="stat-icon">
+              💵
+            </div>
+
+            <div>
+
+              <span>
+                Dólar
+              </span>
+
+              <strong id="dashboardDollar">
+                Carregando...
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-icon">
+              💶
+            </div>
+
+            <div>
+
+              <span>
+                Euro
+              </span>
+
+              <strong id="dashboardEuro">
+                Carregando...
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-icon">
+              💷
+            </div>
+
+            <div>
+
+              <span>
+                Libra
+              </span>
+
+              <strong id="dashboardPound">
+                Carregando...
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-icon">
+              ₿
+            </div>
+
+            <div>
+
+              <span>
+                Bitcoin
+              </span>
+
+              <strong id="dashboardBitcoin">
+                Carregando...
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="dashboard-grid">
+
+          <div class="panel-card">
+
+            <div class="panel-card-header">
+
+              <div>
+                <h3>Status do sistema</h3>
+              </div>
+
+              <span class="status-online">
+                ● Online
+              </span>
+
+            </div>
+
+
+            <div class="status-list">
+
+              <div>
+                <span>API de moedas</span>
+                <strong id="currencyApiStatus">
+                  Verificando...
+                </strong>
+              </div>
+
+              <div>
+                <span>API Bitcoin</span>
+                <strong id="bitcoinApiStatus">
+                  Verificando...
+                </strong>
+              </div>
+
+              <div>
+                <span>Última atualização</span>
+                <strong id="lastUpdate">
+                  --
+                </strong>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="panel-card">
+
+            <div class="panel-card-header">
+
+              <h3>
+                Ações rápidas
+              </h3>
+
+            </div>
+
+
+            <div class="quick-actions">
+
+              <button
+                class="quick-button"
+                data-section="moedas"
+              >
+                💰
+                <span>
+                  Ver moedas
+                </span>
+              </button>
+
+
+              <button
+                class="quick-button"
+                data-section="anuncios"
+              >
+                📢
+                <span>
+                  Anúncios
+                </span>
+              </button>
+
+
+              <button
+                class="quick-button"
+                data-section="configuracoes"
+              >
+                ⚙️
+                <span>
+                  Configurações
+                </span>
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           MOEDAS
+      ================================================== -->
+
+      <section
+        id="section-moedas"
+        class="admin-section"
+      >
+
+        <div class="section-header">
+
+          <div>
+
+            <h3>
+              Cotações das moedas
+            </h3>
+
+            <p>
+              Valores atuais em reais.
+            </p>
+
+          </div>
+
+
+          <button
+            id="refreshCurrencies"
+            class="btn-primary"
+          >
+            ↻ Atualizar
+          </button>
+
+        </div>
+
+
+        <div
+          id="currencyTable"
+          class="currency-admin-grid"
+        >
+
+          <div class="loading-box">
+            Carregando moedas...
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           BITCOIN
+      ================================================== -->
+
+      <section
+        id="section-bitcoin"
+        class="admin-section"
+      >
+
+        <div class="section-header">
+
+          <div>
+
+            <h3>
+              Bitcoin
+            </h3>
+
+            <p>
+              Informações atuais do Bitcoin.
+            </p>
+
+          </div>
+
+
+          <button
+            id="refreshBitcoin"
+            class="btn-primary"
+          >
+            ↻ Atualizar
+          </button>
+
+        </div>
+
+
+        <div
+          id="bitcoinPanel"
+          class="bitcoin-admin-card"
+        >
+
+          <div class="loading-box">
+            Carregando Bitcoin...
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           ANÚNCIOS
+      ================================================== -->
+
+      <section
+        id="section-anuncios"
+        class="admin-section"
+      >
+
+        <div class="section-header">
+
+          <div>
+
+            <h3>
+              Gerenciamento de anúncios
+            </h3>
+
+            <p>
+              Controle a propaganda exibida no site.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="panel-card">
+
+          <div class="setting-row">
+
+            <div>
+
+              <strong>
+                Anúncio de entrada
+              </strong>
+
+              <p>
+                Mostra uma propaganda quando o visitante
+                entra no site.
+              </p>
+
+            </div>
+
+
+            <label class="switch">
+
+              <input
+                type="checkbox"
+                id="popupAdEnabled"
+              >
+
+              <span class="slider"></span>
+
+            </label>
+
+          </div>
+
+
+          <div class="setting-row">
+
+            <div>
+
+              <strong>
+                Tempo mínimo para exibir novamente
+              </strong>
+
+              <p>
+                Evita mostrar a propaganda repetidamente.
+              </p>
+
+            </div>
+
+
+            <select id="adFrequency">
+
+              <option value="0">
+                Sempre
+              </option>
+
+              <option value="1">
+                1 hora
+              </option>
+
+              <option value="6">
+                6 horas
+              </option>
+
+              <option value="24">
+                24 horas
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="setting-row">
+
+            <div>
+
+              <strong>
+                Texto do anúncio
+              </strong>
+
+              <p>
+                Mensagem exibida no anúncio.
+              </p>
+
+            </div>
+
+
+            <input
+              type="text"
+              id="adText"
+              class="setting-input"
+              value="Confira nossas ofertas!"
+            >
+
+          </div>
+
+
+          <button
+            id="saveAds"
+            class="btn-primary"
+          >
+            💾 Salvar anúncios
+          </button>
+
+
+          <div
+            id="adSaveMessage"
+            class="save-message"
+          ></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           CONFIGURAÇÕES
+      ================================================== -->
+
+      <section
+        id="section-configuracoes"
+        class="admin-section"
+      >
+
+        <div class="section-header">
+
+          <div>
+
+            <h3>
+              Configurações
+            </h3>
+
+            <p>
+              Configurações gerais do painel.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="panel-card">
+
+          <div class="setting-row">
+
+            <div>
+
+              <strong>
+                Nome do site
+              </strong>
+
+              <p>
+                Nome exibido no painel.
+              </p>
+
+            </div>
+
+
+            <input
+              type="text"
+              id="siteName"
+              class="setting-input"
+              value="Gonçalves Câmbio"
+            >
+
+          </div>
+
+
+          <div class="setting-row">
+
+            <div>
+
+              <strong>
+                Atualização automática
+              </strong>
+
+              <p>
+                Atualiza as cotações automaticamente.
+              </p>
+
+            </div>
+
+
+            <select id="autoRefresh">
+
+              <option value="5">
+                A cada 5 minutos
+              </option>
+
+              <option value="10">
+                A cada 10 minutos
+              </option>
+
+              <option value="30">
+                A cada 30 minutos
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <button
+            id="saveSettings"
+            class="btn-primary"
+          >
+            💾 Salvar configurações
+          </button>
+
+
+          <div
+            id="settingsMessage"
+            class="save-message"
+          ></div>
+
+        </div>
+
+      </section>
+
+
+    </main>
+
+  </div>
+
+
+  <script
+    src="painel.js"
+  ></script>
+
+</body>
+
+</html>
