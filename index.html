@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Gonçalves Câmbio | Dólar, Euro e Moedas</title>
+
+  <meta
+    name="description"
+    content="Consulte cotações de moedas, dólar, euro, bitcoin e use nosso conversor de moedas online."
+  >
+
+  <meta name="robots" content="index, follow">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- CABEÇALHO -->
+  <header class="header">
+
+    <div class="container header-content">
+
+      <a href="#" class="logo">
+        <span>G</span>
+        Gonçalves Câmbio
+      </a>
+
+      <nav class="menu">
+        <a href="#cotacoes">Cotações</a>
+        <a href="#conversor">Conversor</a>
+        <a href="#sobre">Sobre</a>
+      </nav>
+
+    </div>
+
+  </header>
+
+
+  <!-- PRINCIPAL -->
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+
+      <div class="container hero-content">
+
+        <div class="hero-text">
+
+          <p class="tag">COTAÇÕES ONLINE</p>
+
+          <h1>
+            Consulte o valor das
+            <strong>moedas em tempo real</strong>
+          </h1>
+
+          <p>
+            Acompanhe dólar, euro, libra, bitcoin e outras moedas
+            em um único lugar.
+          </p>
+
+          <a href="#conversor" class="btn">
+            Abrir conversor
+          </a>
+
+        </div>
+
+        <div class="hero-box">
+
+          <div class="status">
+            <span></span>
+            Mercado online
+          </div>
+
+          <h2>Dólar</h2>
+
+          <div id="heroDollar">
+            Carregando...
+          </div>
+
+          <small id="lastUpdate">
+            Atualizando cotação...
+          </small>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- COTAÇÕES -->
+    <section id="cotacoes" class="section">
+
+      <div class="container">
+
+        <div class="section-title">
+
+          <div>
+            <p class="tag">MERCADO</p>
+
+            <h2>Cotações</h2>
+          </div>
+
+          <button id="refreshBtn" class="btn-secondary">
+            ↻ Atualizar
+          </button>
+
+        </div>
+
+
+        <div id="currencyCards" class="cards">
+
+          <div class="loading">
+            Carregando cotações...
+          </div>
+
+        </div>
+
+        <p class="notice">
+          As cotações apresentadas são apenas informativas.
+          Confirme o valor final junto à instituição financeira
+          antes de realizar uma operação.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- CONVERSOR -->
+    <section id="conversor" class="section converter-section">
+
+      <div class="container">
+
+        <div class="section-title">
+
+          <div>
+
+            <p class="tag">CONVERSOR</p>
+
+            <h2>Quanto vale seu dinheiro?</h2>
+
+            <p>
+              Converta valores entre diferentes moedas.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="converter">
+
+          <div class="field">
+
+            <label for="amount">
+              Valor
+            </label>
+
+            <input
+              type="number"
+              id="amount"
+              value="100"
+              min="0"
+              step="any"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="from">
+              De
+            </label>
+
+            <select id="from">
+              <option value="BRL">Real brasileiro</option>
+              <option value="USD">Dólar americano</option>
+              <option value="EUR">Euro</option>
+              <option value="GBP">Libra</option>
+              <option value="ARS">Peso argentino</option>
+              <option value="PYG">Guarani paraguaio</option>
+              <option value="CLP">Peso chileno</option>
+            </select>
+
+          </div>
+
+
+          <button id="swapBtn" class="swap">
+            ⇄
+          </button>
+
+
+          <div class="field">
+
+            <label for="to">
+              Para
+            </label>
+
+            <select id="to">
+              <option value="USD">Dólar americano</option>
+              <option value="BRL">Real brasileiro</option>
+              <option value="EUR">Euro</option>
+              <option value="GBP">Libra</option>
+              <option value="ARS">Peso argentino</option>
+              <option value="PYG">Guarani paraguaio</option>
+              <option value="CLP">Peso chileno</option>
+            </select>
+
+          </div>
+
+
+          <div class="result">
+
+            <span>Resultado aproximado</span>
+
+            <strong id="conversionResult">
+              —
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- SOBRE -->
+    <section id="sobre" class="section">
+
+      <div class="container">
+
+        <div class="section-title">
+
+          <div>
+
+            <p class="tag">GONÇALVES CÂMBIO</p>
+
+            <h2>Informação financeira simples</h2>
+
+          </div>
+
+        </div>
+
+
+        <div class="info-grid">
+
+          <div class="info-card">
+
+            <h3>📊 Cotações</h3>
+
+            <p>
+              Consulte valores de diferentes moedas
+              em um único lugar.
+            </p>
+
+          </div>
+
+
+          <div class="info-card">
+
+            <h3>🔄 Atualização</h3>
+
+            <p>
+              O sistema consulta automaticamente
+              os valores disponíveis na API de câmbio.
+            </p>
+
+          </div>
+
+
+          <div class="info-card">
+
+            <h3>🛡️ Informação</h3>
+
+            <p>
+              O Gonçalves Câmbio é um portal informativo
+              e não realiza operações financeiras.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- RODAPÉ -->
+  <footer class="footer">
+
+    <div class="container footer-content">
+
+      <div>
+
+        <h3>Gonçalves Câmbio</h3>
+
+        <p>
+          Cotações e conversão de moedas online.
+        </p>
+
+      </div>
+
+
+      <div>
+
+        <p>
+          © <span id="year"></span>
+          Gonçalves Câmbio
+        </p>
+
+        <p>
+          Não somos uma instituição financeira.
+        </p>
+
+      </div>
+
+    </div>
+
+  </footer>
+
+
+  <!-- JAVASCRIPT -->
+  <script src="script.js"></script>
+
+</body>
+</html>
