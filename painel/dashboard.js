@@ -1,845 +1,638 @@
 /* =========================================================
-GONÇALVES CÂMBIO
-DASHBOARD ADMINISTRATIVO - V1
+   GONÇALVES CÂMBIO
+   PAINEL DE ANÚNCIOS
 ========================================================= */
 
 const SUPABASE_URL =
-"https://skfodedzzdeptnksufuq.supabase.co";
+  "https://skfodedzzdeptnksufuq.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
-"sb_publishable_TDC6NwdHx1XuYhXcFzxkiQ_1N6lLkGE";
+  "sb_publishable_TDC6NwdHx1XuYhXcFzxkiQ_1N6lLkGE";
 
 const supabaseClient =
-window.supabase.createClient(
-SUPABASE_URL,
-SUPABASE_PUBLISHABLE_KEY
-);
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
 
 /* =========================================================
-APIs
+   ELEMENTOS
 ========================================================= */
 
-const API_URL =
-"https://open.er-api.com/v6/latest/BRL";
+const formSection =
+  document.getElementById("formSection");
 
-const BITCOIN_API =
-"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl&include_24hr_change=true";
+const anuncioForm =
+  document.getElementById("anuncioForm");
 
-/* =========================================================
-MOEDAS
-========================================================= */
+const listaAnuncios =
+  document.getElementById("listaAnuncios");
 
-const moedas = [
+const preview =
+  document.getElementById("preview");
 
-{
-codigo: "USD",
-nome: "Dólar americano",
-simbolo: "🇺🇸"
-},
+const formMessage =
+  document.getElementById("formMessage");
 
-{
-codigo: "EUR",
-nome: "Euro",
-simbolo: "🇪🇺"
-},
-
-{
-codigo: "GBP",
-nome: "Libra esterlina",
-simbolo: "🇬🇧"
-},
-
-{
-codigo: "ARS",
-nome: "Peso argentino",
-simbolo: "🇦🇷"
-},
-
-{
-codigo: "PYG",
-nome: "Guarani paraguaio",
-simbolo: "🇵🇾"
-},
-
-{
-codigo: "CLP",
-nome: "Peso chileno",
-simbolo: "🇨🇱"
-},
-
-{
-codigo: "JPY",
-nome: "Iene japonês",
-simbolo: "🇯🇵"
-},
-
-{
-codigo: "CAD",
-nome: "Dólar canadense",
-simbolo: "🇨🇦"
-}
-
-];
-
-let taxas = {};
 
 /* =========================================================
-FORMATAÇÃO
-========================================================= */
-
-function formatarBRL(valor) {
-
-if (!Number.isFinite(Number(valor))) {
-return "Indisponível";
-}
-
-return new Intl.NumberFormat(
-"pt-BR",
-{
-style: "currency",
-currency: "BRL",
-minimumFractionDigits: 2,
-maximumFractionDigits: 2
-}
-).format(Number(valor));
-
-}
-
-/* =========================================================
-VERIFICAR LOGIN
+   LOGIN
 ========================================================= */
 
 async function verificarLogin() {
 
-try {
-
-const {
-  data,
-  error
-} =
-  await supabaseClient
-    .auth
-    .getSession();
-
-
-if (error) {
-
-  console.error(
-    "Erro ao verificar sessão:",
+  const {
+    data,
     error
-  );
-
-  window.location.href =
-    "index.html";
-
-  return false;
-
-}
-
-
-if (
-  !data ||
-  !data.session
-) {
-
-  window.location.href =
-    "index.html";
-
-  return false;
-
-}
-
-
-const usuario =
-  document.getElementById(
-    "usuarioLogado"
-  );
-
-
-if (usuario) {
-
-  usuario.textContent =
-    data.session.user.email ||
-    "Administrador";
-
-}
-
-
-return true;
-
-} catch (erro) {
-
-console.error(
-  "Erro de autenticação:",
-  erro
-);
-
-window.location.href =
-  "index.html";
-
-return false;
-
-}
-
-}
-
-/* =========================================================
-CARREGAR COTAÇÕES
-========================================================= */
-
-async function carregarCotacoes() {
-
-const area =
-document.getElementById(
-"currencyCards"
-);
-
-try {
-
-if (area) {
-
-  area.innerHTML = `
-    <div class="loading">
-      ⏳ Atualizando cotações...
-    </div>
-  `;
-
-}
-
-
-const resposta =
-  await fetch(
-    API_URL,
-    {
-      cache: "no-store"
-    }
-  );
-
-
-if (!resposta.ok) {
-
-  throw new Error(
-    "Erro HTTP " +
-    resposta.status
-  );
-
-}
-
-
-const dados =
-  await resposta.json();
-
-
-if (
-  !dados ||
-  dados.result !== "success" ||
-  !dados.rates
-) {
-
-  throw new Error(
-    "API de moedas indisponível"
-  );
-
-}
-
-
-taxas =
-  dados.rates;
-
-
-mostrarMoedas();
-
-atualizarResumo();
-
-atualizarHorario();
-
-} catch (erro) {
-
-console.error(
-  "Erro nas cotações:",
-  erro
-);
-
-
-if (area) {
-
-  area.innerHTML = `
-    <div class="loading">
-      ❌ Não foi possível carregar
-      as cotações.
-    </div>
-  `;
-
-}
-
-}
-
-}
-
-/* =========================================================
-MOSTRAR MOEDAS
-========================================================= */
-
-function mostrarMoedas() {
-
-const area =
-document.getElementById(
-"currencyCards"
-);
-
-if (!area) return;
-
-area.innerHTML = "";
-
-moedas.forEach(
-function(moeda) {
-
-  const taxa =
-    Number(
-      taxas[moeda.codigo]
-    );
-
+  } = await supabaseClient.auth.getSession();
 
   if (
-    !Number.isFinite(taxa) ||
-    taxa <= 0
+    error ||
+    !data ||
+    !data.session
   ) {
+
+    window.location.href =
+      "index.html";
+
+    return false;
+
+  }
+
+  const usuario =
+    document.getElementById("usuarioLogado");
+
+  if (usuario) {
+
+    usuario.textContent =
+      data.session.user.email ||
+      "Administrador";
+
+  }
+
+  return true;
+
+}
+
+
+/* =========================================================
+   MENSAGEM
+========================================================= */
+
+function mensagem(texto, tipo = "") {
+
+  if (!formMessage) return;
+
+  formMessage.textContent =
+    texto;
+
+  formMessage.className =
+    "message " + tipo;
+
+}
+
+
+/* =========================================================
+   CARREGAR ANÚNCIOS
+========================================================= */
+
+async function carregarAnuncios() {
+
+  if (!listaAnuncios) return;
+
+  listaAnuncios.innerHTML = `
+    <div class="loading">
+      ⏳ Carregando anúncios...
+    </div>
+  `;
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("anuncios")
+    .select("*")
+    .order("created_at", {
+      ascending: false
+    });
+
+  if (error) {
+
+    console.error(error);
+
+    listaAnuncios.innerHTML = `
+      <div class="error">
+        ❌ Erro ao carregar anúncios.<br><br>
+        Verifique se a tabela "anuncios" foi criada no Supabase.
+      </div>
+    `;
 
     return;
 
   }
 
+  if (!data || data.length === 0) {
 
-  /*
-    A API retorna quanto 1 BRL
-    vale na moeda estrangeira.
+    listaAnuncios.innerHTML = `
+      <div class="empty">
+        📢 Nenhum anúncio cadastrado ainda.
+      </div>
+    `;
 
-    Para descobrir quanto vale
-    1 moeda estrangeira em BRL,
-    fazemos:
+    preview.innerHTML = `
+      <div class="preview-empty">
+        Nenhum anúncio selecionado.
+      </div>
+    `;
 
-    1 / taxa
-  */
+    return;
 
-  const valor =
-    1 / taxa;
+  }
 
+  listaAnuncios.innerHTML = "";
 
-  const card =
-    document.createElement(
-      "div"
-    );
+  data.forEach(anuncio => {
 
+    const item =
+      document.createElement("div");
 
-  card.className =
-    "currency-card";
+    item.className =
+      "ad-item";
 
+    item.innerHTML = `
 
-  card.innerHTML = `
+      <div class="ad-image">
 
-    <div class="currency-top">
+        ${
+          anuncio.imagem
+            ? `<img
+                src="${anuncio.imagem}"
+                alt="${anuncio.titulo || "Anúncio"}"
+                onerror="this.style.display='none';"
+              >`
+            : `<div class="ad-no-image">
+                Sem imagem
+              </div>`
+        }
 
-      <div class="currency-icon">
-        ${moeda.simbolo}
       </div>
 
-      <div>
 
-        <div class="currency-name">
-          ${moeda.nome}
-        </div>
+      <div class="ad-info">
 
-        <span class="currency-code">
-          ${moeda.codigo}
+        <h4>
+          ${escapar(anuncio.titulo)}
+        </h4>
+
+        <p>
+          🔗 ${escapar(anuncio.link)}
+        </p>
+
+        <span
+          class="status ${
+            anuncio.ativo
+              ? "active"
+              : "inactive"
+          }"
+        >
+          ${
+            anuncio.ativo
+              ? "🟢 Ativo"
+              : "🔴 Desativado"
+          }
         </span>
 
       </div>
 
-    </div>
 
+      <div class="ad-actions">
 
-    <div class="currency-value">
+        <button
+          class="edit-btn"
+          onclick="editarAnuncio('${anuncio.id}')"
+        >
+          ✏️ Editar
+        </button>
 
-      ${formatarBRL(valor)}
+        <button
+          class="delete-btn"
+          onclick="excluirAnuncio('${anuncio.id}')"
+        >
+          🗑️ Excluir
+        </button>
 
-    </div>
+        <button
+          class="edit-btn"
+          onclick="mostrarPreview('${anuncio.id}')"
+        >
+          👁️ Ver
+        </button>
 
+      </div>
 
-    <div class="currency-label">
+    `;
 
-      1 ${moeda.codigo} em reais
+    listaAnuncios.appendChild(item);
 
-    </div>
-
-  `;
-
-
-  area.appendChild(
-    card
-  );
+  });
 
 }
 
-);
-
-}
 
 /* =========================================================
-ATUALIZAR RESUMO
+   NOVO ANÚNCIO
 ========================================================= */
 
-function atualizarResumo() {
+function novoAnuncio() {
 
-const resumo = [
-"USD",
-"EUR",
-"GBP"
-];
+  anuncioForm.reset();
 
-resumo.forEach(
-function(codigo) {
+  document.getElementById("anuncioId").value =
+    "";
 
-  const elemento =
-    document.getElementById(
-      "summary" + codigo
+  document.getElementById("formTitulo").textContent =
+    "Novo anúncio";
+
+  document.getElementById("status").value =
+    "true";
+
+  mensagem("");
+
+  formSection.classList.remove("hidden");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+}
+
+
+/* =========================================================
+   EDITAR
+========================================================= */
+
+async function editarAnuncio(id) {
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("anuncios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+
+    alert(
+      "Não foi possível carregar o anúncio."
     );
 
-
-  const taxa =
-    Number(
-      taxas[codigo]
-    );
-
-
-  if (
-    elemento &&
-    Number.isFinite(taxa) &&
-    taxa > 0
-  ) {
-
-    elemento.textContent =
-      formatarBRL(
-        1 / taxa
-      );
+    return;
 
   }
 
+  document.getElementById("anuncioId").value =
+    data.id;
+
+  document.getElementById("titulo").value =
+    data.titulo || "";
+
+  document.getElementById("imagem").value =
+    data.imagem || "";
+
+  document.getElementById("link").value =
+    data.link || "";
+
+  document.getElementById("status").value =
+    data.ativo ? "true" : "false";
+
+  document.getElementById("formTitulo").textContent =
+    "Editar anúncio";
+
+  mensagem("");
+
+  formSection.classList.remove("hidden");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
 }
 
-);
-
-}
 
 /* =========================================================
-ATUALIZAR HORÁRIO
+   SALVAR
 ========================================================= */
 
-function atualizarHorario() {
+anuncioForm.addEventListener(
+  "submit",
+  async function(event) {
 
-const elemento =
-document.getElementById(
-"lastUpdate"
+    event.preventDefault();
+
+    const id =
+      document.getElementById("anuncioId").value;
+
+    const titulo =
+      document.getElementById("titulo").value.trim();
+
+    const imagem =
+      document.getElementById("imagem").value.trim();
+
+    const link =
+      document.getElementById("link").value.trim();
+
+    const ativo =
+      document.getElementById("status").value ===
+      "true";
+
+    if (!titulo || !link) {
+
+      mensagem(
+        "Preencha o título e o link.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    const salvarBtn =
+      document.getElementById("salvarBtn");
+
+    salvarBtn.disabled = true;
+
+    salvarBtn.textContent =
+      "⏳ Salvando...";
+
+    const dados = {
+
+      titulo,
+      imagem,
+      link,
+      ativo
+
+    };
+
+    let resultado;
+
+    if (id) {
+
+      resultado =
+        await supabaseClient
+          .from("anuncios")
+          .update(dados)
+          .eq("id", id);
+
+    } else {
+
+      resultado =
+        await supabaseClient
+          .from("anuncios")
+          .insert([dados]);
+
+    }
+
+    if (resultado.error) {
+
+      console.error(
+        resultado.error
+      );
+
+      mensagem(
+        "Erro ao salvar. Verifique o Supabase.",
+        "error"
+      );
+
+      salvarBtn.disabled = false;
+
+      salvarBtn.textContent =
+        "💾 Salvar anúncio";
+
+      return;
+
+    }
+
+    mensagem(
+      "✅ Anúncio salvo com sucesso!",
+      "success"
+    );
+
+    salvarBtn.disabled = false;
+
+    salvarBtn.textContent =
+      "💾 Salvar anúncio";
+
+    anuncioForm.reset();
+
+    document.getElementById("anuncioId").value =
+      "";
+
+    document.getElementById("status").value =
+      "true";
+
+    await carregarAnuncios();
+
+  }
 );
 
-if (!elemento) return;
-
-elemento.textContent =
-"Atualizado às " +
-new Date().toLocaleTimeString(
-"pt-BR",
-{
-hour: "2-digit",
-minute: "2-digit",
-second: "2-digit"
-}
-);
-
-}
 
 /* =========================================================
-BITCOIN
+   EXCLUIR
 ========================================================= */
 
-async function carregarBitcoin() {
+async function excluirAnuncio(id) {
 
-const area =
-document.getElementById(
-"cryptoCards"
-);
+  const confirmar =
+    confirm(
+      "Tem certeza que deseja excluir este anúncio?"
+    );
 
-const resumo =
-document.getElementById(
-"summaryBTC"
-);
+  if (!confirmar) return;
 
-try {
+  const {
+    error
+  } = await supabaseClient
+    .from("anuncios")
+    .delete()
+    .eq("id", id);
 
-if (area) {
+  if (error) {
 
-  area.innerHTML = `
-    <div class="loading">
-      ⏳ Carregando Bitcoin...
-    </div>
+    console.error(error);
+
+    alert(
+      "Não foi possível excluir o anúncio."
+    );
+
+    return;
+
+  }
+
+  await carregarAnuncios();
+
+}
+
+
+/* =========================================================
+   PREVIEW
+========================================================= */
+
+async function mostrarPreview(id) {
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("anuncios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+
+    return;
+
+  }
+
+  preview.innerHTML = `
+
+    <a
+      href="${escapar(data.link)}"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="preview-ad"
+    >
+
+      ${
+        data.imagem
+          ? `<img
+              src="${escapar(data.imagem)}"
+              alt="${escapar(data.titulo)}"
+            >`
+          : ""
+      }
+
+      <div class="preview-ad-content">
+
+        <strong>
+          ${escapar(data.titulo)}
+        </strong>
+
+        <p>
+          Clique para acessar a propaganda
+        </p>
+
+      </div>
+
+    </a>
+
   `;
 
+  preview.scrollIntoView({
+    behavior: "smooth"
+  });
+
 }
 
 
-const resposta =
-  await fetch(
-    BITCOIN_API,
-    {
-      cache: "no-store"
+/* =========================================================
+   FECHAR FORMULÁRIO
+========================================================= */
+
+document
+  .getElementById("cancelarBtn")
+  .addEventListener(
+    "click",
+    function() {
+
+      formSection.classList.add(
+        "hidden"
+      );
+
     }
   );
 
 
-if (!resposta.ok) {
-
-  throw new Error(
-    "Bitcoin HTTP " +
-    resposta.status
-  );
-
-}
-
-
-const dados =
-  await resposta.json();
-
-
-if (
-  !dados ||
-  !dados.bitcoin ||
-  !Number.isFinite(
-    Number(dados.bitcoin.brl)
-  )
-) {
-
-  throw new Error(
-    "Bitcoin indisponível"
-  );
-
-}
-
-
-const valor =
-  Number(
-    dados.bitcoin.brl
-  );
-
-
-const variacao =
-  Number(
-    dados.bitcoin.brl_24h_change || 0
-  );
-
-
-const sinal =
-  variacao >= 0
-    ? "+"
-    : "";
-
-
-if (resumo) {
-
-  resumo.textContent =
-    formatarBRL(
-      valor
-    );
-
-}
-
-
-if (area) {
-
-  area.innerHTML = `
-
-    <div class="currency-card">
-
-      <div class="currency-top">
-
-        <div class="currency-icon">
-          ₿
-        </div>
-
-        <div>
-
-          <div class="currency-name">
-            Bitcoin
-          </div>
-
-          <span class="currency-code">
-            BTC
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="currency-value">
-
-        ${formatarBRL(valor)}
-
-      </div>
-
-
-      <div class="currency-label">
-
-        1 BTC em reais
-
-        <br><br>
-
-        <strong>
-
-          ${sinal}${variacao.toFixed(2)}%
-
-        </strong>
-
-        nas últimas 24h
-
-      </div>
-
-    </div>
-
-  `;
-
-}
-
-} catch (erro) {
-
-console.error(
-  "Erro Bitcoin:",
-  erro
-);
-
-
-if (resumo) {
-
-  resumo.textContent =
-    "Indisponível";
-
-}
-
-
-if (area) {
-
-  area.innerHTML = `
-    <div class="loading">
-      ❌ Bitcoin indisponível.
-    </div>
-  `;
-
-}
-
-}
-
-}
-
 /* =========================================================
-ATUALIZAR TUDO
+   BOTÕES
 ========================================================= */
 
-async function atualizarTudo() {
+document
+  .getElementById("novoAnuncioBtn")
+  .addEventListener(
+    "click",
+    novoAnuncio
+  );
 
-const botao =
-document.getElementById(
-"refreshBtn"
-);
 
-if (botao) {
+document
+  .getElementById("atualizarBtn")
+  .addEventListener(
+    "click",
+    carregarAnuncios
+  );
 
-botao.disabled =
-  true;
 
-botao.textContent =
-  "⏳ Atualizando...";
+document
+  .getElementById("logoutBtn")
+  .addEventListener(
+    "click",
+    async function() {
 
-}
+      await supabaseClient
+        .auth
+        .signOut();
 
-await Promise.allSettled([
+      window.location.href =
+        "index.html";
 
-carregarCotacoes(),
+    }
+  );
 
-carregarBitcoin()
-
-]);
-
-if (botao) {
-
-botao.disabled =
-  false;
-
-botao.textContent =
-  "↻ Atualizar";
-
-}
-
-}
 
 /* =========================================================
-SAIR
+   ESCAPAR TEXTO
 ========================================================= */
 
-async function sair() {
+function escapar(texto) {
 
-const botao =
-document.getElementById(
-"logoutBtn"
-);
-
-if (botao) {
-
-botao.disabled =
-  true;
-
-botao.textContent =
-  "Saindo...";
+  return String(texto || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 }
 
-try {
-
-const {
-  error
-} =
-  await supabaseClient
-    .auth
-    .signOut({
-      scope: "local"
-    });
-
-
-if (error) {
-
-  throw error;
-
-}
-
-} catch (erro) {
-
-console.error(
-  "Erro ao sair:",
-  erro
-);
-
-
-if (botao) {
-
-  botao.disabled =
-    false;
-
-  botao.textContent =
-    "🚪 Sair";
-
-}
-
-return;
-
-}
-
-window.location.href =
-"index.html";
-
-}
 
 /* =========================================================
-INICIALIZAÇÃO
+   ANO
+========================================================= */
+
+document.getElementById("year").textContent =
+  new Date().getFullYear();
+
+
+/* =========================================================
+   INICIAR
 ========================================================= */
 
 document.addEventListener(
-"DOMContentLoaded",
-async function() {
+  "DOMContentLoaded",
+  async function() {
 
-/* ANO */
+    const autenticado =
+      await verificarLogin();
 
-const year =
-  document.getElementById(
-    "year"
-  );
+    if (!autenticado) return;
 
+    await carregarAnuncios();
 
-if (year) {
-
-  year.textContent =
-    new Date()
-      .getFullYear();
-
-}
-
-
-/* LOGIN */
-
-const autenticado =
-  await verificarLogin();
-
-
-if (!autenticado) {
-
-  return;
-
-}
-
-
-/* BOTÃO ATUALIZAR */
-
-const refresh =
-  document.getElementById(
-    "refreshBtn"
-  );
-
-
-if (refresh) {
-
-  refresh.addEventListener(
-    "click",
-    atualizarTudo
-  );
-
-}
-
-
-/* BOTÃO SAIR */
-
-const logout =
-  document.getElementById(
-    "logoutBtn"
-  );
-
-
-if (logout) {
-
-  logout.addEventListener(
-    "click",
-    sair
-  );
-
-}
-
-
-/* COTAÇÕES */
-
-await carregarCotacoes();
-
-
-/* BITCOIN */
-
-await carregarBitcoin();
-
-}
-);
-
-/* =========================================================
-ATUALIZAÇÃO AUTOMÁTICA
-A CADA 5 MINUTOS
-========================================================= */
-
-setInterval(
-function() {
-
-atualizarTudo();
-
-},
-5 * 60 * 1000
+  }
 );
