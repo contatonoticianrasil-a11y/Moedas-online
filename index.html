@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 
 <head>
-
   <meta charset="UTF-8">
 
   <meta
@@ -10,9 +9,7 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>
-    Gonçalves Câmbio | Dólar, Euro e Moedas
-  </title>
+  <title>Gonçalves Câmbio | Dólar, Euro e Moedas</title>
 
   <meta
     name="description"
@@ -24,6 +21,11 @@
     content="index, follow"
   >
 
+  <meta
+    name="theme-color"
+    content="#0b1220"
+  >
+
   <link
     rel="stylesheet"
     href="style.css"
@@ -31,9 +33,7 @@
 
 </head>
 
-
 <body>
-
 
 <!-- =========================
      CABEÇALHO
@@ -43,17 +43,10 @@
 
   <div class="container header-content">
 
-    <a
-      href="#"
-      class="logo"
-    >
-
+    <a href="#" class="logo">
       <span>G</span>
-
       Gonçalves Câmbio
-
     </a>
-
 
     <nav class="menu">
 
@@ -80,13 +73,11 @@
 </header>
 
 
-
 <!-- =========================
      PRINCIPAL
 ========================= -->
 
 <main>
-
 
 <!-- =========================
      HERO
@@ -96,84 +87,59 @@
 
   <div class="container hero-content">
 
-
     <div class="hero-text">
 
       <p class="tag">
         COTAÇÕES ONLINE
       </p>
 
-
       <h1>
-
         Consulte o valor das
-
-        <strong>
-          moedas em tempo real
-        </strong>
-
+        <strong>moedas em tempo real</strong>
       </h1>
 
-
       <p>
-
         Acompanhe dólar, euro, libra,
         Bitcoin e outras moedas em
         um único lugar.
-
       </p>
-
 
       <a
         href="#conversor"
         class="btn"
       >
-
         Abrir conversor
-
       </a>
 
     </div>
 
 
+    <!-- DÓLAR EM DESTAQUE -->
 
     <div class="hero-box">
 
-
       <div class="status">
-
         <span></span>
-
         Mercado online
-
       </div>
-
 
       <h2>
         Dólar
       </h2>
 
-
       <div id="heroDollar">
-
         Carregando...
-
       </div>
 
-
       <small id="lastUpdate">
-
         Atualizando cotação...
-
       </small>
 
     </div>
 
-
   </div>
 
 </section>
-
 
 
 <!-- =========================
@@ -185,12 +151,9 @@
   class="section"
 >
 
-
   <div class="container">
 
-
     <div class="section-title">
-
 
       <div>
 
@@ -198,29 +161,24 @@
           MERCADO
         </p>
 
-
         <h2>
           Cotações
         </h2>
 
       </div>
 
-
       <button
         id="refreshBtn"
         class="btn-secondary"
+        type="button"
       >
-
         ↻ Atualizar
-
       </button>
-
 
     </div>
 
 
-
-    <!-- MOEDAS -->
+    <!-- COTAÇÕES DAS MOEDAS -->
 
     <div
       id="currencyCards"
@@ -228,16 +186,13 @@
     >
 
       <div class="loading">
-
-        Carregando cotações...
-
+        ⏳ Carregando cotações...
       </div>
 
     </div>
 
 
-
-    <!-- CRIPTOMOEDAS -->
+    <!-- BITCOIN -->
 
     <div
       id="cryptoCards"
@@ -245,13 +200,10 @@
     >
 
       <div class="loading">
-
-        Carregando Bitcoin...
-
+        ⏳ Carregando Bitcoin...
       </div>
 
     </div>
-
 
 
     <p class="notice">
@@ -265,11 +217,9 @@
 
     </p>
 
-
   </div>
 
 </section>
-
 
 
 <!-- =========================
@@ -281,12 +231,9 @@
   class="section converter-section"
 >
 
-
   <div class="container">
 
-
     <div class="section-title">
-
 
       <div>
 
@@ -294,24 +241,18 @@
           CONVERSOR
         </p>
 
-
         <h2>
           Quanto vale seu dinheiro?
         </h2>
 
-
         <p>
-
           Converta valores entre
           diferentes moedas.
-
         </p>
 
       </div>
 
-
     </div>
-
 
 
     <div class="converter">
@@ -325,17 +266,16 @@
           Valor
         </label>
 
-
         <input
           type="number"
           id="amount"
           value="100"
           min="0"
           step="any"
+          inputmode="decimal"
         >
 
       </div>
-
 
 
       <!-- DE -->
@@ -345,7 +285,6 @@
         <label for="from">
           De
         </label>
-
 
         <select id="from">
 
@@ -362,7 +301,7 @@
           </option>
 
           <option value="GBP">
-            Libra
+            Libra esterlina
           </option>
 
           <option value="ARS">
@@ -390,19 +329,17 @@
       </div>
 
 
-
       <!-- TROCAR -->
 
       <button
         id="swapBtn"
         class="swap"
         type="button"
+        aria-label="Trocar moedas"
+        title="Trocar moedas"
       >
-
         ⇄
-
       </button>
-
 
 
       <!-- PARA -->
@@ -412,7 +349,6 @@
         <label for="to">
           Para
         </label>
-
 
         <select id="to">
 
@@ -429,7 +365,7 @@
           </option>
 
           <option value="GBP">
-            Libra
+            Libra esterlina
           </option>
 
           <option value="ARS">
@@ -457,7 +393,6 @@
       </div>
 
 
-
       <!-- RESULTADO -->
 
       <div class="result">
@@ -466,23 +401,17 @@
           Resultado aproximado
         </span>
 
-
         <strong id="conversionResult">
-
           —
-
         </strong>
 
       </div>
 
-
     </div>
-
 
   </div>
 
 </section>
-
 
 
 <!-- =========================
@@ -494,12 +423,9 @@
   class="section chart-section"
 >
 
-
   <div class="container">
 
-
     <div class="section-title">
-
 
       <div>
 
@@ -507,23 +433,22 @@
           HISTÓRICO
         </p>
 
-
         <h2>
           Variação das moedas
         </h2>
 
-
         <p>
-
           Acompanhe a evolução
           das cotações.
-
         </p>
 
       </div>
 
 
-      <select id="chartCurrency">
+      <select
+        id="chartCurrency"
+        aria-label="Escolha a moeda do gráfico"
+      >
 
         <option value="USD">
           Dólar
@@ -533,38 +458,45 @@
           Euro
         </option>
 
-      </select>
+        <option value="GBP">
+          Libra
+        </option>
 
+        <option value="ARS">
+          Peso argentino
+        </option>
+
+        <option value="JPY">
+          Iene
+        </option>
+
+        <option value="CAD">
+          Dólar canadense
+        </option>
+
+      </select>
 
     </div>
 
 
-
     <div class="chart-card">
-
 
       <canvas
         id="currencyChart"
       ></canvas>
 
-
       <div
         id="chartMessage"
         class="chart-message"
       >
-
-        Carregando gráfico...
-
+        ⏳ Carregando gráfico...
       </div>
 
-
     </div>
-
 
   </div>
 
 </section>
-
 
 
 <!-- =========================
@@ -576,9 +508,7 @@
   class="section"
 >
 
-
   <div class="container">
-
 
     <div class="section-title">
 
@@ -588,7 +518,6 @@
           GONÇALVES CÂMBIO
         </p>
 
-
         <h2>
           Informação financeira simples
         </h2>
@@ -596,7 +525,6 @@
       </div>
 
     </div>
-
 
 
     <div class="info-grid">
@@ -608,17 +536,13 @@
           📊 Cotações
         </h3>
 
-
         <p>
-
           Consulte valores de
           diferentes moedas em
           um único lugar.
-
         </p>
 
       </div>
-
 
 
       <div class="info-card">
@@ -627,17 +551,58 @@
           🔄 Atualização
         </h3>
 
-
         <p>
-
           O sistema consulta
           automaticamente os
           valores disponíveis.
-
         </p>
 
       </div>
 
+
+      <div class="info-card">
+
+        <h3>
+          ₿ Bitcoin
+        </h3>
+
+        <p>
+          Consulte também o
+          valor do Bitcoin em
+          reais e sua variação.
+        </p>
+
+      </div>
+
+
+      <div class="info-card">
+
+        <h3>
+          📈 Histórico
+        </h3>
+
+        <p>
+          Visualize a evolução
+          das cotações através
+          do gráfico.
+        </p>
+
+      </div>
+
+
+      <div class="info-card">
+
+        <h3>
+          🔄 Conversor
+        </h3>
+
+        <p>
+          Converta valores entre
+          real, dólar, euro e
+          outras moedas.
+        </p>
+
+      </div>
 
 
       <div class="info-card">
@@ -646,29 +611,22 @@
           🛡️ Informação
         </h3>
 
-
         <p>
-
           O site é um portal
           informativo e não
           realiza operações
           financeiras.
-
         </p>
 
       </div>
 
-
     </div>
-
 
   </div>
 
 </section>
 
-
 </main>
-
 
 
 <!-- =========================
@@ -677,9 +635,7 @@
 
 <footer class="footer">
 
-
   <div class="container footer-content">
-
 
     <div>
 
@@ -687,45 +643,32 @@
         Gonçalves Câmbio
       </h3>
 
-
       <p>
-
         Cotações e conversão
         de moedas online.
-
       </p>
 
     </div>
-
 
 
     <div>
 
       <p>
-
         ©
         <span id="year"></span>
-
         Gonçalves Câmbio
-
       </p>
 
-
       <p>
-
         Não somos uma instituição
         financeira.
-
       </p>
 
     </div>
 
-
   </div>
 
-
 </footer>
-
 
 
 <!-- =========================
@@ -737,9 +680,8 @@
 ></script>
 
 
-
 <!-- =========================
-     JAVASCRIPT DO SITE
+     JAVASCRIPT
 ========================= -->
 
 <script
