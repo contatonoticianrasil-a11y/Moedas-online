@@ -10,10 +10,10 @@
 ========================================================= */
 
 const SUPABASE_URL =
-  "COLE_AQUI_A_URL_DO_SEU_SUPABASE";
+  "https://skfodedzzdeptnksufuq.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
-  "COLE_AQUI_A_SUA_PUBLISHABLE_KEY";
+  "sb_publishable_TDC6NwdHx1XuYhXcFzxkiQ_1N6lLkGE ";
 
 
 const supabaseClient =
