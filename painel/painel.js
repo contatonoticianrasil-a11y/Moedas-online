@@ -13,7 +13,7 @@ const SUPABASE_URL =
   "https://skfodedzzdeptnksufuq.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_TDC6NwdHx1XuYhXcFzxkiQ_1N6lLkGE ";
+  "sb_publishable_TDC6NwdHx1XuYhXcFzxkiQ_1N6lLkGE";
 
 
 const supabaseClient =
@@ -28,34 +28,22 @@ const supabaseClient =
 ========================================================= */
 
 const loginForm =
-  document.getElementById(
-    "loginForm"
-  );
+  document.getElementById("loginForm");
 
 const emailInput =
-  document.getElementById(
-    "email"
-  );
+  document.getElementById("email");
 
 const passwordInput =
-  document.getElementById(
-    "password"
-  );
+  document.getElementById("password");
 
 const loginBtn =
-  document.getElementById(
-    "loginBtn"
-  );
+  document.getElementById("loginBtn");
 
 const loginMessage =
-  document.getElementById(
-    "loginMessage"
-  );
+  document.getElementById("loginMessage");
 
 const mostrarSenha =
-  document.getElementById(
-    "mostrarSenha"
-  );
+  document.getElementById("mostrarSenha");
 
 
 /* =========================================================
@@ -66,6 +54,8 @@ function mostrarMensagem(
   texto,
   tipo = "error"
 ) {
+
+  if (!loginMessage) return;
 
   loginMessage.textContent =
     texto;
@@ -80,33 +70,36 @@ function mostrarMensagem(
    MOSTRAR / OCULTAR SENHA
 ========================================================= */
 
-mostrarSenha.addEventListener(
-  "click",
-  function() {
+if (mostrarSenha) {
 
-    if (
-      passwordInput.type ===
-      "password"
-    ) {
+  mostrarSenha.addEventListener(
+    "click",
+    function() {
 
-      passwordInput.type =
-        "text";
+      if (
+        passwordInput.type === "password"
+      ) {
 
-      mostrarSenha.textContent =
-        "🙈";
+        passwordInput.type =
+          "text";
 
-    } else {
+        mostrarSenha.textContent =
+          "🙈";
 
-      passwordInput.type =
-        "password";
+      } else {
 
-      mostrarSenha.textContent =
-        "👁️";
+        passwordInput.type =
+          "password";
+
+        mostrarSenha.textContent =
+          "👁️";
+
+      }
 
     }
+  );
 
-  }
-);
+}
 
 
 /* =========================================================
@@ -115,37 +108,48 @@ mostrarSenha.addEventListener(
 
 async function verificarSessao() {
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .auth
-      .getSession();
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .auth
+        .getSession();
 
 
-  if (error) {
+    if (error) {
+
+      console.error(
+        "Erro ao verificar sessão:",
+        error
+      );
+
+      return;
+
+    }
+
+
+    if (
+      data &&
+      data.session
+    ) {
+
+      console.log(
+        "Usuário já autenticado."
+      );
+
+      abrirPainel();
+
+    }
+
+  } catch (erro) {
 
     console.error(
-      "Erro ao verificar sessão:",
-      error
+      "Erro na sessão:",
+      erro
     );
-
-    return;
-
-  }
-
-
-  if (
-    data &&
-    data.session
-  ) {
-
-    console.log(
-      "Usuário já autenticado."
-    );
-
-    abrirPainel();
 
   }
 
@@ -156,93 +160,139 @@ async function verificarSessao() {
    LOGIN
 ========================================================= */
 
-loginForm.addEventListener(
-  "submit",
-  async function(event) {
+if (loginForm) {
 
-    event.preventDefault();
+  loginForm.addEventListener(
+    "submit",
+    async function(event) {
 
-
-    const email =
-      emailInput.value
-        .trim();
-
-    const password =
-      passwordInput.value;
+      event.preventDefault();
 
 
-    if (!email || !password) {
+      const email =
+        emailInput.value.trim();
 
-      mostrarMensagem(
-        "Digite seu e-mail e sua senha."
-      );
-
-      return;
-
-    }
-
-
-    loginBtn.disabled =
-      true;
-
-    loginBtn.textContent =
-      "Entrando...";
-
-    mostrarMensagem(
-      ""
-    );
-
-
-    try {
-
-      const {
-        data,
-        error
-      } =
-        await supabaseClient
-          .auth
-          .signInWithPassword({
-
-            email:
-              email,
-
-            password:
-              password
-
-          });
-
-
-      if (error) {
-
-        console.error(
-          "Erro de login:",
-          error
-        );
-
-
-        mostrarMensagem(
-          "E-mail ou senha incorretos."
-        );
-
-
-        loginBtn.disabled =
-          false;
-
-        loginBtn.textContent =
-          "Entrar no painel";
-
-        return;
-
-      }
+      const password =
+        passwordInput.value;
 
 
       if (
-        !data ||
-        !data.session
+        !email ||
+        !password
       ) {
 
         mostrarMensagem(
-          "Não foi possível criar a sessão."
+          "Digite seu e-mail e sua senha."
+        );
+
+        return;
+
+      }
+
+
+      loginBtn.disabled =
+        true;
+
+      loginBtn.textContent =
+        "Entrando...";
+
+
+      mostrarMensagem(
+        "",
+        ""
+      );
+
+
+      try {
+
+        const {
+          data,
+          error
+        } =
+          await supabaseClient
+            .auth
+            .signInWithPassword({
+
+              email:
+                email,
+
+              password:
+                password
+
+            });
+
+
+        if (error) {
+
+          console.error(
+            "Erro de login:",
+            error
+          );
+
+
+          mostrarMensagem(
+            "E-mail ou senha incorretos."
+          );
+
+
+          loginBtn.disabled =
+            false;
+
+          loginBtn.textContent =
+            "Entrar no painel";
+
+          return;
+
+        }
+
+
+        if (
+          !data ||
+          !data.session
+        ) {
+
+          mostrarMensagem(
+            "Não foi possível criar a sessão."
+          );
+
+
+          loginBtn.disabled =
+            false;
+
+          loginBtn.textContent =
+            "Entrar no painel";
+
+          return;
+
+        }
+
+
+        mostrarMensagem(
+          "Login realizado com sucesso!",
+          "success"
+        );
+
+
+        setTimeout(
+          function() {
+
+            abrirPainel();
+
+          },
+          500
+        );
+
+
+      } catch (erro) {
+
+        console.error(
+          "Erro inesperado:",
+          erro
+        );
+
+
+        mostrarMensagem(
+          "Ocorreu um erro. Tente novamente."
         );
 
 
@@ -252,50 +302,12 @@ loginForm.addEventListener(
         loginBtn.textContent =
           "Entrar no painel";
 
-        return;
-
       }
 
-
-      mostrarMensagem(
-        "Login realizado com sucesso!",
-        "success"
-      );
-
-
-      setTimeout(
-        function() {
-
-          abrirPainel();
-
-        },
-        500
-      );
-
-
-    } catch (erro) {
-
-      console.error(
-        "Erro inesperado:",
-        erro
-      );
-
-
-      mostrarMensagem(
-        "Ocorreu um erro. Tente novamente."
-      );
-
-
-      loginBtn.disabled =
-        false;
-
-      loginBtn.textContent =
-        "Entrar no painel";
-
     }
+  );
 
-  }
-);
+}
 
 
 /* =========================================================
@@ -303,13 +315,6 @@ loginForm.addEventListener(
 ========================================================= */
 
 function abrirPainel() {
-
-  /*
-    Depois vamos criar o painel administrativo.
-
-    Por enquanto, envia para:
-    painel/dashboard.html
-  */
 
   window.location.href =
     "dashboard.html";
@@ -333,8 +338,7 @@ supabaseClient
 
 
       if (
-        event ===
-        "SIGNED_OUT"
+        event === "SIGNED_OUT"
       ) {
 
         console.log(
