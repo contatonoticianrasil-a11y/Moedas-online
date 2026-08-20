@@ -1,11 +1,6 @@
 /* =========================================================
    GONÇALVES CÂMBIO
-   PAINEL PROFISSIONAL DE PROPAGANDAS
-========================================================= */
-
-
-/* =========================================================
-   SUPABASE
+   DASHBOARD - SISTEMA DE PROPAGANDAS
 ========================================================= */
 
 const SUPABASE_URL =
@@ -22,159 +17,85 @@ const supabaseClient =
 
 
 /* =========================================================
-   ESTADO
-========================================================= */
-
-let anuncios = [];
-
-let anuncioEditando = null;
-
-
-/* =========================================================
    ELEMENTOS
 ========================================================= */
 
-const adsGrid =
-  document.getElementById("adsGrid");
+const listaAnuncios =
+  document.getElementById("listaAnuncios");
 
-const loading =
-  document.getElementById("loading");
+const totalAnuncios =
+  document.getElementById("totalAnuncios");
 
-const emptyState =
-  document.getElementById("emptyState");
+const ativosAnuncios =
+  document.getElementById("ativosAnuncios");
 
-const modalOverlay =
-  document.getElementById("modalOverlay");
+const inativosAnuncios =
+  document.getElementById("inativosAnuncios");
 
-const adForm =
-  document.getElementById("adForm");
+const formAnuncio =
+  document.getElementById("formAnuncio");
 
-const searchInput =
-  document.getElementById("searchInput");
+const modalAnuncio =
+  document.getElementById("modalAnuncio");
 
-const formMessage =
-  document.getElementById("formMessage");
+const abrirModalBtn =
+  document.getElementById("abrirModalBtn");
 
-const toast =
-  document.getElementById("toast");
+const fecharModalBtn =
+  document.getElementById("fecharModalBtn");
 
+const cancelarBtn =
+  document.getElementById("cancelarBtn");
 
-/* =========================================================
-   TOAST
-========================================================= */
+const atualizarBtn =
+  document.getElementById("atualizarBtn");
 
-let toastTimer;
-
-function mostrarToast(
-  mensagem,
-  tipo = "success"
-) {
-
-  if (!toast) return;
-
-  clearTimeout(toastTimer);
-
-  toast.textContent =
-    mensagem;
-
-  toast.className =
-    "toast show " + tipo;
-
-  toastTimer =
-    setTimeout(
-      function() {
-
-        toast.className =
-          "toast";
-
-      },
-      3000
-    );
-
-}
+const logoutBtn =
+  document.getElementById("logoutBtn");
 
 
 /* =========================================================
-   MENSAGEM DO FORMULÁRIO
-========================================================= */
-
-function mostrarMensagem(
-  mensagem,
-  tipo = ""
-) {
-
-  if (!formMessage) return;
-
-  formMessage.textContent =
-    mensagem;
-
-  formMessage.className =
-    "form-message " + tipo;
-
-}
-
-
-/* =========================================================
-   LOGIN
+   VERIFICAR LOGIN
 ========================================================= */
 
 async function verificarLogin() {
 
-  try {
+  const {
+    data,
+    error
+  } = await supabaseClient.auth.getSession();
 
-    const {
-      data,
+  if (error) {
+
+    console.error(
+      "Erro ao verificar sessão:",
       error
-    } =
-      await supabaseClient
-        .auth
-        .getSession();
+    );
 
-    if (
-      error ||
-      !data ||
-      !data.session
-    ) {
+    window.location.href = "index.html";
 
-      window.location.href =
-        "index.html";
+    return false;
+  }
 
-      return false;
+  if (!data.session) {
 
-    }
+    window.location.href = "index.html";
 
-    const email =
+    return false;
+  }
+
+  const usuario =
+    document.getElementById("usuarioLogado");
+
+  if (usuario) {
+
+    usuario.textContent =
       data.session.user.email ||
       "Administrador";
 
-    const usuario =
-      document.getElementById(
-        "usuarioLogado"
-      );
-
-    if (usuario) {
-
-      usuario.textContent =
-        email;
-
-    }
-
-    return true;
-
-  } catch (erro) {
-
-    console.error(
-      "Erro de autenticação:",
-      erro
-    );
-
-    window.location.href =
-      "index.html";
-
-    return false;
-
   }
 
+  return true;
 }
 
 
@@ -184,167 +105,113 @@ async function verificarLogin() {
 
 async function carregarAnuncios() {
 
-  mostrarLoading();
+  if (!listaAnuncios) return;
 
-  try {
+  listaAnuncios.innerHTML = `
+    <div class="loading">
+      ⏳ Carregando propagandas...
+    </div>
+  `;
 
-    const {
-      data,
-      error
-    } =
-      await supabaseClient
-        .from("anuncios")
-        .select("*")
-        .order(
-          "created_at",
-          {
-            ascending: false
-          }
-        );
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("anuncios")
+    .select("*")
+    .order("id", {
+      ascending: false
+    });
 
-    if (error) {
-
-      throw error;
-
-    }
-
-    anuncios =
-      data || [];
-
-    atualizarEstatisticas();
-
-    renderizarAnuncios(
-      anuncios
-    );
-
-  } catch (erro) {
+  if (error) {
 
     console.error(
       "Erro ao carregar anúncios:",
-      erro
+      error
     );
 
-    esconderLoading();
+    listaAnuncios.innerHTML = `
+      <div class="error">
+        ❌ Erro ao carregar propagandas.
+        <br>
+        <small>${escapeHTML(error.message)}</small>
+      </div>
+    `;
 
-    if (adsGrid) {
-
-      adsGrid.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">⚠️</div>
-
-          <h3>Não foi possível carregar</h3>
-
-          <p>
-            Verifique se a tabela
-            <strong>anuncios</strong>
-            existe no Supabase.
-          </p>
-        </div>
-      `;
-
-    }
-
+    return;
   }
+
+  atualizarResumo(data || []);
+
+  if (!data || data.length === 0) {
+
+    listaAnuncios.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📢</div>
+
+        <h3>
+          Nenhuma propaganda cadastrada
+        </h3>
+
+        <p>
+          Comece criando sua primeira propaganda.
+        </p>
+
+        <button
+          type="button"
+          class="primary-btn"
+          onclick="abrirModal()"
+        >
+          ＋ Criar propaganda
+        </button>
+      </div>
+    `;
+
+    return;
+  }
+
+  listaAnuncios.innerHTML =
+    data.map(
+      anuncio => criarCardAnuncio(anuncio)
+    ).join("");
 
 }
 
 
 /* =========================================================
-   LOADING
+   RESUMO
 ========================================================= */
 
-function mostrarLoading() {
-
-  if (loading) {
-
-    loading.classList.remove(
-      "hidden"
-    );
-
-  }
-
-  if (emptyState) {
-
-    emptyState.classList.add(
-      "hidden"
-    );
-
-  }
-
-  if (adsGrid) {
-
-    adsGrid.innerHTML = "";
-
-  }
-
-}
-
-
-function esconderLoading() {
-
-  if (loading) {
-
-    loading.classList.add(
-      "hidden"
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   ESTATÍSTICAS
-========================================================= */
-
-function atualizarEstatisticas() {
+function atualizarResumo(anuncios) {
 
   const total =
     anuncios.length;
 
   const ativos =
     anuncios.filter(
-      anuncio =>
-        anuncio.ativo === true
+      anuncio => anuncio.ativo === true
     ).length;
 
   const inativos =
     total - ativos;
 
+  if (totalAnuncios) {
 
-  const totalElement =
-    document.getElementById(
-      "totalAds"
-    );
-
-  const activeElement =
-    document.getElementById(
-      "activeAds"
-    );
-
-  const inactiveElement =
-    document.getElementById(
-      "inactiveAds"
-    );
-
-
-  if (totalElement) {
-
-    totalElement.textContent =
+    totalAnuncios.textContent =
       total;
 
   }
 
-  if (activeElement) {
+  if (ativosAnuncios) {
 
-    activeElement.textContent =
+    ativosAnuncios.textContent =
       ativos;
 
   }
 
-  if (inactiveElement) {
+  if (inativosAnuncios) {
 
-    inactiveElement.textContent =
+    inativosAnuncios.textContent =
       inativos;
 
   }
@@ -353,576 +220,362 @@ function atualizarEstatisticas() {
 
 
 /* =========================================================
-   RENDERIZAR
+   CRIAR CARD
 ========================================================= */
 
-function renderizarAnuncios(
-  lista
-) {
-
-  esconderLoading();
-
-  if (!adsGrid) return;
-
-
-  if (!lista.length) {
-
-    adsGrid.innerHTML = "";
-
-    if (emptyState) {
-
-      emptyState.classList.remove(
-        "hidden"
-      );
-
-    }
-
-    return;
-
-  }
-
-
-  if (emptyState) {
-
-    emptyState.classList.add(
-      "hidden"
-    );
-
-  }
-
-
-  adsGrid.innerHTML = "";
-
-
-  lista.forEach(
-    function(anuncio) {
-
-      const card =
-        document.createElement(
-          "article"
-        );
-
-      card.className =
-        "ad-card";
-
-
-      const imagem =
-        anuncio.imagem_url
-          ? `
-            <img
-              src="${escaparHTML(
-                anuncio.imagem_url
-              )}"
-              alt="${escaparHTML(
-                anuncio.titulo ||
-                "Propaganda"
-              )}"
-              onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=&quot;no-image&quot;>🖼️ Imagem indisponível</span>';"
-            >
-          `
-          : `
-            <span class="no-image">
-              🖼️ Sem imagem
-            </span>
-          `;
-
-
-      const status =
-        anuncio.ativo === true
-          ? `
-            <span class="status-badge status-active">
-              ● ATIVO
-            </span>
-          `
-          : `
-            <span class="status-badge status-inactive">
-              ● INATIVO
-            </span>
-          `;
-
-
-      const descricao =
-        anuncio.descricao ||
-        "Sem descrição cadastrada.";
-
-
-      const link =
-        anuncio.link_url ||
-        "";
-
-
-      card.innerHTML = `
-
-        <div class="ad-image">
-          ${imagem}
-        </div>
-
-        <div class="ad-body">
-
-          <div class="ad-title-row">
-
-            <div class="ad-title">
-              ${escaparHTML(
-                anuncio.titulo ||
-                "Sem título"
-              )}
-            </div>
-
-            ${status}
-
-          </div>
-
-          <p class="ad-description">
-            ${escaparHTML(
-              descricao
-            )}
-          </p>
-
-          ${
-            link
-              ? `
-                <a
-                  class="ad-link"
-                  href="${escaparHTML(
-                    link
-                  )}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  🔗 ${escaparHTML(link)}
-                </a>
-              `
-              : `
-                <span class="ad-link">
-                  🔗 Nenhum link cadastrado
-                </span>
-              `
-          }
-
-          <div class="ad-actions">
-
-            <button
-              class="ad-action"
-              data-action="toggle"
-              data-id="${anuncio.id}"
-            >
-              ${
-                anuncio.ativo
-                  ? "🔴 Desativar"
-                  : "🟢 Ativar"
-              }
-            </button>
-
-            <button
-              class="ad-action"
-              data-action="edit"
-              data-id="${anuncio.id}"
-            >
-              ✏️ Editar
-            </button>
-
-            <button
-              class="ad-action delete"
-              data-action="delete"
-              data-id="${anuncio.id}"
-            >
-              🗑️ Excluir
-            </button>
-
-          </div>
-
-        </div>
-
-      `;
-
-
-      adsGrid.appendChild(
-        card
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   ESCAPAR HTML
-========================================================= */
-
-function escaparHTML(valor) {
-
-  return String(valor ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-
-}
-
-
-/* =========================================================
-   MODAL
-========================================================= */
-
-function abrirModal(
-  anuncio = null
-) {
-
-  anuncioEditando =
-    anuncio;
-
-  const modalTitle =
-    document.getElementById(
-      "modalTitle"
-    );
-
-  const adId =
-    document.getElementById(
-      "adId"
-    );
-
-  const titulo =
-    document.getElementById(
-      "titulo"
-    );
+function criarCardAnuncio(anuncio) {
 
   const imagem =
-    document.getElementById(
-      "imagem_url"
-    );
+    anuncio.imagem_url ||
+    "https://via.placeholder.com/600x300?text=Goncalves+Cambio";
 
-  const link =
-    document.getElementById(
-      "link_url"
-    );
-
-  const descricao =
-    document.getElementById(
-      "descricao"
-    );
-
-  const intervalo =
-    document.getElementById(
-      "intervalo_minutos"
-    );
-
-  const ativo =
-    document.getElementById(
-      "ativo"
-    );
-
-
-  if (anuncio) {
-
-    modalTitle.textContent =
-      "Editar propaganda";
-
-    adId.value =
-      anuncio.id || "";
-
-    titulo.value =
-      anuncio.titulo || "";
-
-    imagem.value =
-      anuncio.imagem_url || "";
-
-    link.value =
-      anuncio.link_url || "";
-
-    descricao.value =
-      anuncio.descricao || "";
-
-    intervalo.value =
-      anuncio.intervalo_minutos ?? 0;
-
-    ativo.checked =
-      anuncio.ativo === true;
-
-  } else {
-
-    modalTitle.textContent =
-      "Nova propaganda";
-
-    adForm.reset();
-
-    adId.value =
-      "";
-
-    intervalo.value =
-      "0";
-
-    ativo.checked =
-      true;
-
-  }
-
-
-  atualizarStatusTexto();
-
-  atualizarPreview();
-
-
-  modalOverlay.classList.remove(
-    "hidden"
-  );
-
-  document.body.style.overflow =
-    "hidden";
-
-
-  setTimeout(
-    function() {
-
-      titulo.focus();
-
-    },
-    100
-  );
-
-}
-
-
-function fecharModal() {
-
-  modalOverlay.classList.add(
-    "hidden"
-  );
-
-  document.body.style.overflow =
-    "";
-
-  anuncioEditando =
-    null;
-
-  mostrarMensagem("");
-
-}
-
-
-/* =========================================================
-   PREVIEW DA IMAGEM
-========================================================= */
-
-function atualizarPreview() {
-
-  const url =
-    document.getElementById(
-      "imagem_url"
-    ).value.trim();
-
-  const preview =
-    document.getElementById(
-      "imagePreview"
-    );
-
-  const image =
-    document.getElementById(
-      "previewImg"
-    );
-
-
-  if (
-    !url ||
-    !preview ||
-    !image
-  ) {
-
-    if (preview) {
-
-      preview.classList.add(
-        "hidden"
-      );
-
-    }
-
-    return;
-
-  }
-
-
-  image.src =
-    url;
-
-  preview.classList.remove(
-    "hidden"
-  );
-
-}
-
-
-/* =========================================================
-   STATUS TEXTO
-========================================================= */
-
-function atualizarStatusTexto() {
-
-  const ativo =
-    document.getElementById(
-      "ativo"
-    );
-
-  const texto =
-    document.getElementById(
-      "statusText"
-    );
-
-  if (!ativo || !texto) return;
-
-  texto.textContent =
-    ativo.checked
+  const status =
+    anuncio.ativo === true
       ? "Ativo"
       : "Inativo";
 
+  const classeStatus =
+    anuncio.ativo === true
+      ? "status-ativo"
+      : "status-inativo";
+
+  return `
+
+    <article class="ad-card">
+
+      <div class="ad-image">
+
+        <img
+          src="${escapeAttribute(imagem)}"
+          alt="${escapeAttribute(anuncio.titulo || "Propaganda")}"
+          onerror="this.src='https://via.placeholder.com/600x300?text=Imagem+indisponivel'"
+        >
+
+        <span class="${classeStatus}">
+          ${status}
+        </span>
+
+      </div>
+
+
+      <div class="ad-content">
+
+        <h3>
+          ${escapeHTML(anuncio.titulo || "Sem título")}
+        </h3>
+
+        <p>
+          ${escapeHTML(anuncio.descricao || "Sem descrição")}
+        </p>
+
+
+        <div class="ad-link">
+
+          🔗
+
+          <span>
+            ${escapeHTML(anuncio.link_url || "")}
+          </span>
+
+        </div>
+
+
+        <div class="ad-footer">
+
+          <button
+            type="button"
+            class="edit-btn"
+            onclick="editarAnuncio(${anuncio.id})"
+          >
+            ✏️ Editar
+          </button>
+
+
+          <button
+            type="button"
+            class="toggle-btn"
+            onclick="alternarAnuncio(${anuncio.id}, ${!anuncio.ativo})"
+          >
+            ${anuncio.ativo ? "🔴 Desativar" : "🟢 Ativar"}
+          </button>
+
+
+          <button
+            type="button"
+            class="delete-btn"
+            onclick="excluirAnuncio(${anuncio.id})"
+          >
+            🗑️ Excluir
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+
+  `;
 }
 
 
 /* =========================================================
-   SALVAR
+   ABRIR MODAL
 ========================================================= */
 
-async function salvarAnuncio(
-  evento
-) {
+function abrirModal(anuncio = null) {
 
-  evento.preventDefault();
+  if (!modalAnuncio) return;
 
+  modalAnuncio.classList.add("active");
 
-  const saveBtn =
-    document.getElementById(
-      "saveBtn"
-    );
+  if (!formAnuncio) return;
 
+  formAnuncio.reset();
 
   const id =
-    document.getElementById(
-      "adId"
-    ).value;
+    document.getElementById("anuncioId");
+
+  const titulo =
+    document.getElementById("titulo");
+
+  const imagem =
+    document.getElementById("imagemUrl");
+
+  const link =
+    document.getElementById("linkUrl");
+
+  const descricao =
+    document.getElementById("descricao");
+
+  const intervalo =
+    document.getElementById("tempoMinutos");
+
+  const ativo =
+    document.getElementById("ativo");
+
+  if (id) {
+
+    id.value =
+      anuncio ? anuncio.id : "";
+
+  }
+
+  if (titulo) {
+
+    titulo.value =
+      anuncio?.titulo || "";
+
+  }
+
+  if (imagem) {
+
+    imagem.value =
+      anuncio?.imagem_url || "";
+
+  }
+
+  if (link) {
+
+    link.value =
+      anuncio?.link_url || "";
+
+  }
+
+  if (descricao) {
+
+    descricao.value =
+      anuncio?.descricao || "";
+
+  }
+
+  if (intervalo) {
+
+    intervalo.value =
+      anuncio?.tempo_minutos ?? 0;
+
+  }
+
+  if (ativo) {
+
+    ativo.checked =
+      anuncio
+        ? anuncio.ativo
+        : true;
+
+  }
+
+}
+
+
+/* =========================================================
+   FECHAR MODAL
+========================================================= */
+
+function fecharModal() {
+
+  if (modalAnuncio) {
+
+    modalAnuncio.classList.remove("active");
+
+  }
+
+}
+
+
+/* =========================================================
+   SALVAR ANÚNCIO
+========================================================= */
+
+async function salvarAnuncio(event) {
+
+  event.preventDefault();
+
+  const id =
+    document.getElementById("anuncioId")?.value;
+
+  const titulo =
+    document.getElementById("titulo")?.value.trim();
+
+  const imagem =
+    document.getElementById("imagemUrl")?.value.trim();
+
+  const link =
+    document.getElementById("linkUrl")?.value.trim();
+
+  const descricao =
+    document.getElementById("descricao")?.value.trim();
+
+  const intervalo =
+    Number(
+      document.getElementById("tempoMinutos")?.value || 0
+    );
+
+  const ativo =
+    document.getElementById("ativo")?.checked ?? true;
+
+
+  if (!titulo) {
+
+    alert("Digite o título da propaganda.");
+
+    return;
+  }
+
+  if (!link) {
+
+    alert("Digite o link da propaganda.");
+
+    return;
+  }
 
 
   const dados = {
 
-    titulo:
-      document.getElementById(
-        "titulo"
-      ).value.trim(),
+    titulo: titulo,
 
     imagem_url:
-      document.getElementById(
-        "imagem_url"
-      ).value.trim() || null,
+      imagem || null,
 
     link_url:
-      document.getElementById(
-        "link_url"
-      ).value.trim() || null,
+      link,
 
     descricao:
-      document.getElementById(
-        "descricao"
-      ).value.trim() || null,
+      descricao || null,
 
     ativo:
-      document.getElementById(
-        "ativo"
-      ).checked,
+      ativo,
 
-    intervalo_minutos:
-      Number(
-        document.getElementById(
-          "intervalo_minutos"
-        ).value
-      ) || 0
+    tempo_minutos:
+      Number.isFinite(intervalo)
+        ? Math.max(0, intervalo)
+        : 0,
+
+    atualizado_em:
+      new Date().toISOString()
 
   };
 
 
-  if (!dados.titulo) {
-
-    mostrarMensagem(
-      "Digite o título da propaganda.",
-      "error"
+  const botao =
+    formAnuncio.querySelector(
+      'button[type="submit"]'
     );
 
-    return;
+
+  if (botao) {
+
+    botao.disabled = true;
+
+    botao.textContent =
+      "⏳ Salvando...";
 
   }
 
 
-  saveBtn.disabled =
-    true;
-
-  saveBtn.textContent =
-    "⏳ Salvando...";
+  let resultado;
 
 
   try {
 
-    let resposta;
-
-
     if (id) {
 
-      resposta =
+      resultado =
         await supabaseClient
           .from("anuncios")
           .update(dados)
-          .eq("id", id)
-          .select()
-          .single();
+          .eq("id", id);
 
     } else {
 
-      resposta =
+      resultado =
         await supabaseClient
           .from("anuncios")
-          .insert(dados)
-          .select()
-          .single();
+          .insert([dados]);
 
     }
 
 
-    if (resposta.error) {
+    if (resultado.error) {
 
-      throw resposta.error;
+      throw resultado.error;
 
     }
 
 
     fecharModal();
 
-    mostrarToast(
+    await carregarAnuncios();
+
+    alert(
       id
         ? "Propaganda atualizada com sucesso!"
-        : "Propaganda criada com sucesso!",
-      "success"
+        : "Propaganda criada com sucesso!"
     );
-
-
-    await carregarAnuncios();
 
 
   } catch (erro) {
 
     console.error(
-      "Erro ao salvar:",
+      "Erro ao salvar propaganda:",
       erro
     );
 
-    mostrarMensagem(
-      "Não foi possível salvar. Verifique a tabela anuncios e as permissões do Supabase.",
-      "error"
+    alert(
+      "Não foi possível salvar.\n\n" +
+      erro.message
     );
+
 
   } finally {
 
-    saveBtn.disabled =
-      false;
+    if (botao) {
 
-    saveBtn.textContent =
-      "💾 Salvar propaganda";
+      botao.disabled = false;
+
+      botao.textContent =
+        "💾 Salvar propaganda";
+
+    }
 
   }
 
@@ -933,31 +586,34 @@ async function salvarAnuncio(
    EDITAR
 ========================================================= */
 
-function editarAnuncio(
-  id
-) {
+async function editarAnuncio(id) {
 
-  const anuncio =
-    anuncios.find(
-      item =>
-        String(item.id) ===
-        String(id)
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("anuncios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+
+  if (error) {
+
+    console.error(
+      "Erro ao buscar anúncio:",
+      error
     );
 
-  if (!anuncio) {
-
-    mostrarToast(
-      "Propaganda não encontrada.",
-      "error"
+    alert(
+      "Não foi possível carregar a propaganda."
     );
 
     return;
-
   }
 
-  abrirModal(
-    anuncio
-  );
+
+  abrirModal(data);
 
 }
 
@@ -966,70 +622,39 @@ function editarAnuncio(
    ATIVAR / DESATIVAR
 ========================================================= */
 
-async function alternarStatus(
-  id
+async function alternarAnuncio(
+  id,
+  novoStatus
 ) {
 
-  const anuncio =
-    anuncios.find(
-      item =>
-        String(item.id) ===
-        String(id)
-    );
-
-  if (!anuncio) return;
-
-
-  try {
-
-    const novoStatus =
-      !anuncio.ativo;
+  const {
+    error
+  } = await supabaseClient
+    .from("anuncios")
+    .update({
+      ativo: novoStatus,
+      atualizado_em:
+        new Date().toISOString()
+    })
+    .eq("id", id);
 
 
-    const {
-      error
-    } =
-      await supabaseClient
-        .from("anuncios")
-        .update({
-          ativo: novoStatus
-        })
-        .eq(
-          "id",
-          anuncio.id
-        );
-
-
-    if (error) {
-
-      throw error;
-
-    }
-
-
-    mostrarToast(
-      novoStatus
-        ? "Propaganda ativada!"
-        : "Propaganda desativada!",
-      "success"
-    );
-
-
-    await carregarAnuncios();
-
-
-  } catch (erro) {
+  if (error) {
 
     console.error(
-      erro
+      "Erro ao alterar status:",
+      error
     );
 
-    mostrarToast(
-      "Não foi possível alterar o status.",
-      "error"
+    alert(
+      "Não foi possível alterar o status."
     );
 
+    return;
   }
+
+
+  await carregarAnuncios();
 
 }
 
@@ -1038,189 +663,64 @@ async function alternarStatus(
    EXCLUIR
 ========================================================= */
 
-async function excluirAnuncio(
-  id
-) {
-
-  const anuncio =
-    anuncios.find(
-      item =>
-        String(item.id) ===
-        String(id)
-    );
-
-  if (!anuncio) return;
-
+async function excluirAnuncio(id) {
 
   const confirmar =
-    window.confirm(
-      `Deseja realmente excluir a propaganda "${anuncio.titulo}"?`
+    confirm(
+      "Tem certeza que deseja excluir esta propaganda?"
     );
 
 
   if (!confirmar) return;
 
 
-  try {
-
-    const {
-      error
-    } =
-      await supabaseClient
-        .from("anuncios")
-        .delete()
-        .eq(
-          "id",
-          anuncio.id
-        );
+  const {
+    error
+  } = await supabaseClient
+    .from("anuncios")
+    .delete()
+    .eq("id", id);
 
 
-    if (error) {
-
-      throw error;
-
-    }
-
-
-    mostrarToast(
-      "Propaganda excluída.",
-      "success"
-    );
-
-
-    await carregarAnuncios();
-
-
-  } catch (erro) {
+  if (error) {
 
     console.error(
       "Erro ao excluir:",
-      erro
+      error
     );
 
-    mostrarToast(
-      "Não foi possível excluir.",
-      "error"
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   PESQUISA
-========================================================= */
-
-function pesquisar() {
-
-  const termo =
-    searchInput.value
-      .trim()
-      .toLowerCase();
-
-
-  if (!termo) {
-
-    renderizarAnuncios(
-      anuncios
+    alert(
+      "Não foi possível excluir a propaganda."
     );
 
     return;
-
   }
 
 
-  const filtrados =
-    anuncios.filter(
-      function(anuncio) {
-
-        return (
-
-          String(
-            anuncio.titulo || ""
-          )
-            .toLowerCase()
-            .includes(termo)
-
-          ||
-
-          String(
-            anuncio.descricao || ""
-          )
-            .toLowerCase()
-            .includes(termo)
-
-          ||
-
-          String(
-            anuncio.link_url || ""
-          )
-            .toLowerCase()
-            .includes(termo)
-
-        );
-
-      }
-    );
-
-
-  renderizarAnuncios(
-    filtrados
-  );
+  await carregarAnuncios();
 
 }
 
 
 /* =========================================================
-   EVENTOS DOS CARDS
+   ESCAPAR HTML
 ========================================================= */
 
-if (adsGrid) {
+function escapeHTML(valor) {
 
-  adsGrid.addEventListener(
-    "click",
-    function(event) {
+  return String(valor)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
-      const botao =
-        event.target.closest(
-          "button[data-action]"
-        );
-
-      if (!botao) return;
+}
 
 
-      const acao =
-        botao.dataset.action;
+function escapeAttribute(valor) {
 
-      const id =
-        botao.dataset.id;
-
-
-      if (acao === "edit") {
-
-        editarAnuncio(id);
-
-      }
-
-      else if (
-        acao === "toggle"
-      ) {
-
-        alternarStatus(id);
-
-      }
-
-      else if (
-        acao === "delete"
-      ) {
-
-        excluirAnuncio(id);
-
-      }
-
-    }
-  );
+  return escapeHTML(valor);
 
 }
 
@@ -1231,39 +731,21 @@ if (adsGrid) {
 
 async function sair() {
 
-  const botao =
-    document.getElementById(
-      "logoutBtn"
-    );
+  if (logoutBtn) {
 
+    logoutBtn.disabled = true;
 
-  if (botao) {
-
-    botao.disabled =
-      true;
-
-    botao.textContent =
+    logoutBtn.textContent =
       "Saindo...";
 
   }
 
 
-  try {
-
-    await supabaseClient
-      .auth
-      .signOut({
-        scope: "local"
-      });
-
-  } catch (erro) {
-
-    console.error(
-      "Erro ao sair:",
-      erro
-    );
-
-  }
+  await supabaseClient
+    .auth
+    .signOut({
+      scope: "local"
+    });
 
 
   window.location.href =
@@ -1273,118 +755,22 @@ async function sair() {
 
 
 /* =========================================================
-   INICIALIZAÇÃO
+   EVENTOS
 ========================================================= */
 
 document.addEventListener(
   "DOMContentLoaded",
   async function() {
 
-    const year =
-      document.getElementById(
-        "year"
-      );
-
-    if (year) {
-
-      year.textContent =
-        new Date()
-          .getFullYear();
-
-    }
-
-
     const autenticado =
       await verificarLogin();
 
-
-    if (!autenticado) {
-
-      return;
-
-    }
+    if (!autenticado) return;
 
 
-    await carregarAnuncios();
+    if (formAnuncio) {
 
-
-    /* NOVO */
-
-    const newAdBtn =
-      document.getElementById(
-        "newAdBtn"
-      );
-
-    if (newAdBtn) {
-
-      newAdBtn.addEventListener(
-        "click",
-        function() {
-
-          abrirModal();
-
-        }
-      );
-
-    }
-
-
-    const emptyNewBtn =
-      document.getElementById(
-        "emptyNewBtn"
-      );
-
-    if (emptyNewBtn) {
-
-      emptyNewBtn.addEventListener(
-        "click",
-        function() {
-
-          abrirModal();
-
-        }
-      );
-
-    }
-
-
-    /* FECHAR */
-
-    const closeModalBtn =
-      document.getElementById(
-        "closeModalBtn"
-      );
-
-    if (closeModalBtn) {
-
-      closeModalBtn.addEventListener(
-        "click",
-        fecharModal
-      );
-
-    }
-
-
-    const cancelBtn =
-      document.getElementById(
-        "cancelBtn"
-      );
-
-    if (cancelBtn) {
-
-      cancelBtn.addEventListener(
-        "click",
-        fecharModal
-      );
-
-    }
-
-
-    /* FORM */
-
-    if (adForm) {
-
-      adForm.addEventListener(
+      formAnuncio.addEventListener(
         "submit",
         salvarAnuncio
       );
@@ -1392,100 +778,45 @@ document.addEventListener(
     }
 
 
-    /* PESQUISA */
+    if (abrirModalBtn) {
 
-    if (searchInput) {
-
-      searchInput.addEventListener(
-        "input",
-        pesquisar
-      );
-
-    }
-
-
-    /* STATUS */
-
-    const ativo =
-      document.getElementById(
-        "ativo"
-      );
-
-    if (ativo) {
-
-      ativo.addEventListener(
-        "change",
-        atualizarStatusTexto
-      );
-
-    }
-
-
-    /* PREVIEW */
-
-    const imagem =
-      document.getElementById(
-        "imagem_url"
-      );
-
-    if (imagem) {
-
-      imagem.addEventListener(
-        "input",
-        atualizarPreview
-      );
-
-    }
-
-
-    /* ATUALIZAR */
-
-    const refreshBtn =
-      document.getElementById(
-        "refreshBtn"
-      );
-
-    if (refreshBtn) {
-
-      refreshBtn.addEventListener(
+      abrirModalBtn.addEventListener(
         "click",
-        function() {
-
-          carregarAnuncios();
-
-        }
+        () => abrirModal()
       );
 
     }
 
 
-    const refreshMenu =
-      document.getElementById(
-        "refreshMenu"
-      );
+    if (fecharModalBtn) {
 
-    if (refreshMenu) {
-
-      refreshMenu.addEventListener(
+      fecharModalBtn.addEventListener(
         "click",
-        function(event) {
-
-          event.preventDefault();
-
-          carregarAnuncios();
-
-        }
+        fecharModal
       );
 
     }
 
 
-    /* LOGOUT */
+    if (cancelarBtn) {
 
-    const logoutBtn =
-      document.getElementById(
-        "logoutBtn"
+      cancelarBtn.addEventListener(
+        "click",
+        fecharModal
       );
+
+    }
+
+
+    if (atualizarBtn) {
+
+      atualizarBtn.addEventListener(
+        "click",
+        carregarAnuncios
+      );
+
+    }
+
 
     if (logoutBtn) {
 
@@ -1497,48 +828,24 @@ document.addEventListener(
     }
 
 
-    /* ESC */
-
-    document.addEventListener(
-      "keydown",
-      function(event) {
-
-        if (
-          event.key === "Escape" &&
-          !modalOverlay.classList.contains(
-            "hidden"
-          )
-        ) {
-
-          fecharModal();
-
-        }
-
-      }
-    );
-
-
-    /* CLIQUE FORA DO MODAL */
-
-    if (modalOverlay) {
-
-      modalOverlay.addEventListener(
-        "click",
-        function(event) {
-
-          if (
-            event.target ===
-            modalOverlay
-          ) {
-
-            fecharModal();
-
-          }
-
-        }
-      );
-
-    }
+    await carregarAnuncios();
 
   }
 );
+
+
+/* =========================================================
+   FUNÇÕES GLOBAIS
+========================================================= */
+
+window.abrirModal =
+  abrirModal;
+
+window.editarAnuncio =
+  editarAnuncio;
+
+window.alternarAnuncio =
+  alternarAnuncio;
+
+window.excluirAnuncio =
+  excluirAnuncio;
