@@ -1,46 +1,14 @@
 const API_URL = "https://open.er-api.com/v6/latest/BRL";
 
 const moedas = [
-  {
-    codigo: "USD",
-    nome: "Dólar americano",
-    simbolo: "🇺🇸"
-  },
-  {
-    codigo: "EUR",
-    nome: "Euro",
-    simbolo: "🇪🇺"
-  },
-  {
-    codigo: "GBP",
-    nome: "Libra",
-    simbolo: "🇬🇧"
-  },
-  {
-    codigo: "ARS",
-    nome: "Peso argentino",
-    simbolo: "🇦🇷"
-  },
-  {
-    codigo: "PYG",
-    nome: "Guarani paraguaio",
-    simbolo: "🇵🇾"
-  },
-  {
-    codigo: "CLP",
-    nome: "Peso chileno",
-    simbolo: "🇨🇱"
-  },
-  {
-    codigo: "JPY",
-    nome: "Iene japonês",
-    simbolo: "🇯🇵"
-  },
-  {
-    codigo: "CAD",
-    nome: "Dólar canadense",
-    simbolo: "🇨🇦"
-  }
+  { codigo: "USD", nome: "Dólar americano", simbolo: "🇺🇸" },
+  { codigo: "EUR", nome: "Euro", simbolo: "🇪🇺" },
+  { codigo: "GBP", nome: "Libra", simbolo: "🇬🇧" },
+  { codigo: "ARS", nome: "Peso argentino", simbolo: "🇦🇷" },
+  { codigo: "PYG", nome: "Guarani paraguaio", simbolo: "🇵🇾" },
+  { codigo: "CLP", nome: "Peso chileno", simbolo: "🇨🇱" },
+  { codigo: "JPY", nome: "Iene japonês", simbolo: "🇯🇵" },
+  { codigo: "CAD", nome: "Dólar canadense", simbolo: "🇨🇦" }
 ];
 
 let taxas = {};
@@ -48,16 +16,25 @@ let ultimaAtualizacao = null;
 
 
 /* =========================
-   FORMATAR MOEDA
+   FORMATAÇÃO
 ========================= */
 
 function formatarMoeda(valor, codigo) {
 
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: codigo,
-    maximumFractionDigits: codigo === "PYG" || codigo === "CLP" ? 0 : 2
-  }).format(valor);
+  try {
+
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: codigo,
+      maximumFractionDigits:
+        codigo === "PYG" || codigo === "CLP" ? 0 : 2
+    }).format(valor);
+
+  } catch {
+
+    return valor.toFixed(2);
+
+  }
 
 }
 
@@ -68,7 +45,8 @@ function formatarMoeda(valor, codigo) {
 
 async function carregarCotacoes() {
 
-  const cards = document.getElementById("currencyCards");
+  const cards =
+    document.getElementById("currencyCards");
 
   cards.innerHTML = `
     <div class="loading">
@@ -87,7 +65,7 @@ async function carregarCotacoes() {
     const dados = await resposta.json();
 
     if (dados.result !== "success") {
-      throw new Error("A API não retornou os dados");
+      throw new Error("API indisponível");
     }
 
     taxas = dados.rates;
@@ -110,14 +88,17 @@ async function carregarCotacoes() {
       <div class="loading">
         ❌ Não foi possível carregar as cotações.
         <br><br>
-        Tente atualizar a página.
+        Verifique sua conexão e tente novamente.
       </div>
     `;
 
-    document.getElementById("heroDollar").textContent = "Indisponível";
+    document.getElementById(
+      "heroDollar"
+    ).textContent = "Indisponível";
 
-    document.getElementById("lastUpdate").textContent =
-      "Erro ao atualizar";
+    document.getElementById(
+      "lastUpdate"
+    ).textContent = "Erro ao atualizar";
 
   }
 
@@ -125,12 +106,13 @@ async function carregarCotacoes() {
 
 
 /* =========================
-   MOSTRAR CARDS
+   CARDS
 ========================= */
 
 function mostrarCards() {
 
-  const cards = document.getElementById("currencyCards");
+  const cards =
+    document.getElementById("currencyCards");
 
   cards.innerHTML = "";
 
@@ -138,13 +120,12 @@ function mostrarCards() {
 
     const taxa = taxas[moeda.codigo];
 
-    if (!taxa) {
-      return;
-    }
+    if (!taxa) return;
 
     const valorEmReais = 1 / taxa;
 
-    const card = document.createElement("div");
+    const card =
+      document.createElement("div");
 
     card.className = "currency-card";
 
@@ -188,20 +169,20 @@ function mostrarCards() {
 
 
 /* =========================
-   DÓLAR NO HERO
+   DÓLAR
 ========================= */
 
 function atualizarDolar() {
 
   const dolar = taxas["USD"];
 
-  if (!dolar) {
-    return;
-  }
+  if (!dolar) return;
 
   const valor = 1 / dolar;
 
-  document.getElementById("heroDollar").textContent =
+  document.getElementById(
+    "heroDollar"
+  ).textContent =
     formatarMoeda(valor, "BRL");
 
 }
@@ -213,19 +194,20 @@ function atualizarDolar() {
 
 function atualizarHorario() {
 
-  if (!ultimaAtualizacao) {
-    return;
-  }
+  if (!ultimaAtualizacao) return;
 
-  const horario = ultimaAtualizacao.toLocaleTimeString(
-    "pt-BR",
-    {
-      hour: "2-digit",
-      minute: "2-digit"
-    }
-  );
+  const horario =
+    ultimaAtualizacao.toLocaleTimeString(
+      "pt-BR",
+      {
+        hour: "2-digit",
+        minute: "2-digit"
+      }
+    );
 
-  document.getElementById("lastUpdate").textContent =
+  document.getElementById(
+    "lastUpdate"
+  ).textContent =
     "Atualizado às " + horario;
 
 }
@@ -237,45 +219,61 @@ function atualizarHorario() {
 
 function atualizarConversor() {
 
-  const amount = parseFloat(
-    document.getElementById("amount").value
-  );
+  const amount =
+    parseFloat(
+      document.getElementById("amount").value
+    );
 
-  const from = document.getElementById("from").value;
+  const from =
+    document.getElementById("from").value;
 
-  const to = document.getElementById("to").value;
+  const to =
+    document.getElementById("to").value;
 
-  const resultado = document.getElementById("conversionResult");
+  const resultado =
+    document.getElementById(
+      "conversionResult"
+    );
 
 
-  if (!amount || amount < 0) {
+  if (isNaN(amount) || amount < 0) {
 
-    resultado.textContent = "Digite um valor válido";
+    resultado.textContent =
+      "Digite um valor válido";
 
     return;
+
   }
 
 
-  if (!taxas[from] || !taxas[to]) {
+  if (
+    !taxas[from] &&
+    from !== "BRL"
+  ) {
 
     resultado.textContent =
       "Cotação indisponível";
 
     return;
+
   }
 
 
-  /*
-    A API está baseada no BRL.
+  if (
+    !taxas[to] &&
+    to !== "BRL"
+  ) {
 
-    Primeiro convertemos a moeda de origem
-    para BRL.
+    resultado.textContent =
+      "Cotação indisponível";
 
-    Depois convertemos BRL para a moeda
-    de destino.
-  */
+    return;
+
+  }
+
 
   let valorEmBRL;
+
 
   if (from === "BRL") {
 
@@ -283,12 +281,14 @@ function atualizarConversor() {
 
   } else {
 
-    valorEmBRL = amount / taxas[from];
+    valorEmBRL =
+      amount / taxas[from];
 
   }
 
 
   let valorFinal;
+
 
   if (to === "BRL") {
 
@@ -296,17 +296,17 @@ function atualizarConversor() {
 
   } else {
 
-    valorFinal = valorEmBRL * taxas[to];
+    valorFinal =
+      valorEmBRL * taxas[to];
 
   }
 
 
-  const resultadoFormatado =
-    formatarMoeda(valorFinal, to);
-
-
   resultado.textContent =
-    resultadoFormatado;
+    formatarMoeda(
+      valorFinal,
+      to
+    );
 
 }
 
@@ -317,15 +317,20 @@ function atualizarConversor() {
 
 function trocarMoedas() {
 
-  const from = document.getElementById("from");
+  const from =
+    document.getElementById("from");
 
-  const to = document.getElementById("to");
+  const to =
+    document.getElementById("to");
 
-  const temporario = from.value;
+  const temporario =
+    from.value;
 
-  from.value = to.value;
+  from.value =
+    to.value;
 
-  to.value = temporario;
+  to.value =
+    temporario;
 
   atualizarConversor();
 
@@ -333,7 +338,7 @@ function trocarMoedas() {
 
 
 /* =========================
-   BOTÃO ATUALIZAR
+   EVENTOS
 ========================= */
 
 document
@@ -344,10 +349,6 @@ document
   );
 
 
-/* =========================
-   BOTÃO TROCAR
-========================= */
-
 document
   .getElementById("swapBtn")
   .addEventListener(
@@ -355,10 +356,6 @@ document
     trocarMoedas
   );
 
-
-/* =========================
-   CAMPOS DO CONVERSOR
-========================= */
 
 document
   .getElementById("amount")
@@ -385,7 +382,7 @@ document
 
 
 /* =========================
-   ANO DO RODAPÉ
+   ANO
 ========================= */
 
 document.getElementById("year").textContent =
@@ -399,10 +396,9 @@ document.getElementById("year").textContent =
 carregarCotacoes();
 
 
-/*
-  Atualiza automaticamente
-  a cada 5 minutos.
-*/
+/* =========================
+   ATUALIZAÇÃO AUTOMÁTICA
+========================= */
 
 setInterval(
   carregarCotacoes,
