@@ -15,9 +15,9 @@ let taxas = {};
 let graficoMoeda = null;
 
 
-/* =================================
-   FORMATAR MOEDA
-================================= */
+/* =========================
+   FORMATAÇÃO
+========================= */
 
 function formatarMoeda(valor, codigo) {
 
@@ -30,7 +30,7 @@ function formatarMoeda(valor, codigo) {
         codigo === "PYG" || codigo === "CLP" ? 0 : 2
     }).format(valor);
 
-  } catch (erro) {
+  } catch {
 
     return Number(valor).toFixed(2);
 
@@ -39,9 +39,9 @@ function formatarMoeda(valor, codigo) {
 }
 
 
-/* =================================
-   CARREGAR COTAÇÕES
-================================= */
+/* =========================
+   COTAÇÕES
+========================= */
 
 async function carregarCotacoes() {
 
@@ -62,7 +62,7 @@ async function carregarCotacoes() {
       await fetch(API_URL);
 
     if (!resposta.ok) {
-      throw new Error("Erro na API de moedas");
+      throw new Error("Erro na API");
     }
 
     const dados =
@@ -75,19 +75,13 @@ async function carregarCotacoes() {
     taxas = dados.rates;
 
     mostrarCards();
-
     atualizarDolar();
-
     atualizarConversor();
-
     atualizarHorario();
 
   } catch (erro) {
 
-    console.error(
-      "Erro nas moedas:",
-      erro
-    );
+    console.error(erro);
 
     cards.innerHTML = `
       <div class="loading">
@@ -104,22 +98,14 @@ async function carregarCotacoes() {
       dolar.textContent = "Indisponível";
     }
 
-    const horario =
-      document.getElementById("lastUpdate");
-
-    if (horario) {
-      horario.textContent =
-        "Erro ao atualizar";
-    }
-
   }
 
 }
 
 
-/* =================================
-   MOSTRAR CARDS
-================================= */
+/* =========================
+   CARDS
+========================= */
 
 function mostrarCards() {
 
@@ -137,7 +123,7 @@ function mostrarCards() {
 
     if (!taxa) return;
 
-    const valorEmReais =
+    const valor =
       1 / taxa;
 
     const card =
@@ -169,10 +155,7 @@ function mostrarCards() {
       </div>
 
       <div class="currency-value">
-        ${formatarMoeda(
-          valorEmReais,
-          "BRL"
-        )}
+        ${formatarMoeda(valor, "BRL")}
       </div>
 
       <div class="currency-label">
@@ -188,57 +171,47 @@ function mostrarCards() {
 }
 
 
-/* =================================
-   DÓLAR PRINCIPAL
-================================= */
+/* =========================
+   DÓLAR
+========================= */
 
 function atualizarDolar() {
 
-  const dolar =
+  const taxa =
     taxas["USD"];
 
-  if (!dolar) return;
+  if (!taxa) return;
 
   const valor =
-    1 / dolar;
+    1 / taxa;
 
   const elemento =
-    document.getElementById(
-      "heroDollar"
-    );
+    document.getElementById("heroDollar");
 
   if (elemento) {
 
     elemento.textContent =
-      formatarMoeda(
-        valor,
-        "BRL"
-      );
+      formatarMoeda(valor, "BRL");
 
   }
 
 }
 
 
-/* =================================
+/* =========================
    HORÁRIO
-================================= */
+========================= */
 
 function atualizarHorario() {
 
   const elemento =
-    document.getElementById(
-      "lastUpdate"
-    );
+    document.getElementById("lastUpdate");
 
   if (!elemento) return;
 
-  const agora =
-    new Date();
-
   elemento.textContent =
     "Atualizado às " +
-    agora.toLocaleTimeString(
+    new Date().toLocaleTimeString(
       "pt-BR",
       {
         hour: "2-digit",
@@ -249,24 +222,16 @@ function atualizarHorario() {
 }
 
 
-/* =================================
+/* =========================
    BITCOIN
-================================= */
+========================= */
 
 async function carregarBitcoin() {
 
   const area =
-    document.getElementById(
-      "cryptoCards"
-    );
+    document.getElementById("cryptoCards");
 
   if (!area) return;
-
-  area.innerHTML = `
-    <div class="loading">
-      ⏳ Carregando Bitcoin...
-    </div>
-  `;
 
   try {
 
@@ -276,32 +241,20 @@ async function carregarBitcoin() {
       );
 
     if (!resposta.ok) {
-      throw new Error(
-        "Erro ao buscar Bitcoin"
-      );
+      throw new Error("Bitcoin indisponível");
     }
 
     const dados =
       await resposta.json();
 
-    if (
-      !dados.bitcoin ||
-      !dados.bitcoin.brl
-    ) {
-
-      throw new Error(
-        "Bitcoin não encontrado"
-      );
-
-    }
+    const btc =
+      dados.bitcoin;
 
     const valor =
-      dados.bitcoin.brl;
+      btc.brl;
 
     const variacao =
-      Number(
-        dados.bitcoin.brl_24h_change || 0
-      );
+      Number(btc.brl_24h_change || 0);
 
     const sinal =
       variacao >= 0 ? "+" : "";
@@ -332,10 +285,7 @@ async function carregarBitcoin() {
 
         <div class="currency-value">
 
-          ${formatarMoeda(
-            valor,
-            "BRL"
-          )}
+          ${formatarMoeda(valor, "BRL")}
 
         </div>
 
@@ -343,7 +293,7 @@ async function carregarBitcoin() {
 
           1 BTC em reais
 
-          <br><br>
+          <br>
 
           <strong>
             ${sinal}${variacao.toFixed(2)}%
@@ -359,10 +309,7 @@ async function carregarBitcoin() {
 
   } catch (erro) {
 
-    console.error(
-      "Erro Bitcoin:",
-      erro
-    );
+    console.error(erro);
 
     area.innerHTML = `
       <div class="loading">
@@ -375,26 +322,20 @@ async function carregarBitcoin() {
 }
 
 
-/* =================================
+/* =========================
    CONVERSOR
-================================= */
+========================= */
 
 function atualizarConversor() {
 
-  const campoValor =
-    document.getElementById(
-      "amount"
-    );
+  const campo =
+    document.getElementById("amount");
 
-  const campoOrigem =
-    document.getElementById(
-      "from"
-    );
+  const origem =
+    document.getElementById("from");
 
-  const campoDestino =
-    document.getElementById(
-      "to"
-    );
+  const destino =
+    document.getElementById("to");
 
   const resultado =
     document.getElementById(
@@ -402,28 +343,19 @@ function atualizarConversor() {
     );
 
   if (
-    !campoValor ||
-    !campoOrigem ||
-    !campoDestino ||
+    !campo ||
+    !origem ||
+    !destino ||
     !resultado
   ) {
     return;
   }
 
   const quantidade =
-    parseFloat(
-      campoValor.value
-    );
-
-  const origem =
-    campoOrigem.value;
-
-  const destino =
-    campoDestino.value;
-
+    Number(campo.value);
 
   if (
-    isNaN(quantidade) ||
+    !Number.isFinite(quantidade) ||
     quantidade < 0
   ) {
 
@@ -434,45 +366,35 @@ function atualizarConversor() {
 
   }
 
+  const moedaOrigem =
+    origem.value;
 
-  if (
-    origem !== "BRL" &&
-    !taxas[origem]
-  ) {
-
-    resultado.textContent =
-      "Cotação indisponível";
-
-    return;
-
-  }
-
-
-  if (
-    destino !== "BRL" &&
-    !taxas[destino]
-  ) {
-
-    resultado.textContent =
-      "Cotação indisponível";
-
-    return;
-
-  }
+  const moedaDestino =
+    destino.value;
 
 
   let valorBRL;
 
 
-  if (origem === "BRL") {
+  if (moedaOrigem === "BRL") {
 
     valorBRL =
       quantidade;
 
   } else {
 
+    if (!taxas[moedaOrigem]) {
+
+      resultado.textContent =
+        "Cotação indisponível";
+
+      return;
+
+    }
+
     valorBRL =
-      quantidade / taxas[origem];
+      quantidade /
+      taxas[moedaOrigem];
 
   }
 
@@ -480,15 +402,25 @@ function atualizarConversor() {
   let valorFinal;
 
 
-  if (destino === "BRL") {
+  if (moedaDestino === "BRL") {
 
     valorFinal =
       valorBRL;
 
   } else {
 
+    if (!taxas[moedaDestino]) {
+
+      resultado.textContent =
+        "Cotação indisponível";
+
+      return;
+
+    }
+
     valorFinal =
-      valorBRL * taxas[destino];
+      valorBRL *
+      taxas[moedaDestino];
 
   }
 
@@ -496,53 +428,47 @@ function atualizarConversor() {
   resultado.textContent =
     formatarMoeda(
       valorFinal,
-      destino
+      moedaDestino
     );
 
 }
 
 
-/* =================================
+/* =========================
    TROCAR MOEDAS
-================================= */
+========================= */
 
 function trocarMoedas() {
 
   const origem =
-    document.getElementById(
-      "from"
-    );
+    document.getElementById("from");
 
   const destino =
-    document.getElementById(
-      "to"
-    );
+    document.getElementById("to");
 
   if (!origem || !destino) {
     return;
   }
 
-  const temporario =
+  const temp =
     origem.value;
 
   origem.value =
     destino.value;
 
   destino.value =
-    temporario;
+    temp;
 
   atualizarConversor();
 
 }
 
 
-/* =================================
-   GRÁFICO HISTÓRICO
-================================= */
+/* =========================
+   GRÁFICO
+========================= */
 
-async function carregarGrafico(
-  codigo = "USD"
-) {
+async function carregarGrafico(codigo = "USD") {
 
   const canvas =
     document.getElementById(
@@ -567,30 +493,28 @@ async function carregarGrafico(
 
   try {
 
-    const hoje =
+    const fim =
       new Date();
 
-    const final =
-      hoje.toISOString()
-        .slice(0, 10);
-
-
-    const inicioData =
+    const inicio =
       new Date();
 
-    inicioData.setDate(
-      inicioData.getDate() - 7
+    inicio.setDate(
+      inicio.getDate() - 7
     );
 
 
-    const inicio =
-      inicioData
-        .toISOString()
+    const inicioTexto =
+      inicio.toISOString()
+        .slice(0, 10);
+
+    const fimTexto =
+      fim.toISOString()
         .slice(0, 10);
 
 
     const url =
-      `https://api.frankfurter.app/${inicio}..${final}?from=BRL&to=${codigo}`;
+      `https://api.frankfurter.app/${inicioTexto}..${fimTexto}?from=BRL&to=${codigo}`;
 
 
     const resposta =
@@ -598,11 +522,7 @@ async function carregarGrafico(
 
 
     if (!resposta.ok) {
-
-      throw new Error(
-        "Erro no histórico"
-      );
-
+      throw new Error("Erro histórico");
     }
 
 
@@ -614,15 +534,6 @@ async function carregarGrafico(
       Object.keys(
         dados.rates
       );
-
-
-    if (!datas.length) {
-
-      throw new Error(
-        "Sem histórico"
-      );
-
-    }
 
 
     const valores =
@@ -656,21 +567,13 @@ async function carregarGrafico(
 
 
     if (graficoMoeda) {
-
       graficoMoeda.destroy();
-
     }
-
-
-    const ctx =
-      canvas.getContext(
-        "2d"
-      );
 
 
     graficoMoeda =
       new Chart(
-        ctx,
+        canvas,
         {
 
           type: "line",
@@ -694,9 +597,7 @@ async function carregarGrafico(
 
                 fill: true,
 
-                pointRadius: 4,
-
-                pointHoverRadius: 6
+                pointRadius: 4
 
               }
 
@@ -708,47 +609,18 @@ async function carregarGrafico(
 
             responsive: true,
 
-            maintainAspectRatio: false,
-
-            plugins: {
-
-              legend: {
-                display: true
-              }
-
-            },
-
-            scales: {
-
-              y: {
-
-                ticks: {
-
-                  callback:
-                    function(valor) {
-
-                      return formatarMoeda(
-                        valor,
-                        "BRL"
-                      );
-
-                    }
-
-                }
-
-              }
-
-            }
+            maintainAspectRatio: false
 
           }
 
         }
       );
 
+
   } catch (erro) {
 
     console.error(
-      "Erro no gráfico:",
+      "Gráfico:",
       erro
     );
 
@@ -756,35 +628,34 @@ async function carregarGrafico(
       "flex";
 
     mensagem.textContent =
-      "❌ Histórico indisponível no momento.";
+      "❌ Histórico indisponível.";
 
   }
 
 }
 
 
-/* =================================
-   EVENTOS
-================================= */
+/* =========================
+   INICIAR SITE
+========================= */
 
 document.addEventListener(
   "DOMContentLoaded",
   function() {
 
 
-    const atualizar =
+    const refresh =
       document.getElementById(
         "refreshBtn"
       );
 
-    if (atualizar) {
+    if (refresh) {
 
-      atualizar.addEventListener(
+      refresh.addEventListener(
         "click",
         function() {
 
           carregarCotacoes();
-
           carregarBitcoin();
 
         }
@@ -793,14 +664,14 @@ document.addEventListener(
     }
 
 
-    const trocar =
+    const swap =
       document.getElementById(
         "swapBtn"
       );
 
-    if (trocar) {
+    if (swap) {
 
-      trocar.addEventListener(
+      swap.addEventListener(
         "click",
         trocarMoedas
       );
@@ -853,14 +724,14 @@ document.addEventListener(
     }
 
 
-    const seletorGrafico =
+    const chartCurrency =
       document.getElementById(
         "chartCurrency"
       );
 
-    if (seletorGrafico) {
+    if (chartCurrency) {
 
-      seletorGrafico.addEventListener(
+      chartCurrency.addEventListener(
         "change",
         function() {
 
@@ -874,39 +745,38 @@ document.addEventListener(
     }
 
 
-    const ano =
+    const year =
       document.getElementById(
         "year"
       );
 
-    if (ano) {
+    if (year) {
 
-      ano.textContent =
+      year.textContent =
         new Date().getFullYear();
 
     }
 
 
-    /* Iniciar */
+    /* COMEÇAR */
 
     carregarCotacoes();
 
     carregarBitcoin();
 
     carregarGrafico(
-      seletorGrafico
-        ? seletorGrafico.value
+      chartCurrency
+        ? chartCurrency.value
         : "USD"
     );
-
 
   }
 );
 
 
-/* =================================
+/* =========================
    ATUALIZAÇÃO AUTOMÁTICA
-================================= */
+========================= */
 
 setInterval(
   function() {
