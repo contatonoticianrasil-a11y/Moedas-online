@@ -1,6 +1,11 @@
 /* =========================================================
    GONÇALVES CÂMBIO
-   GERENCIADOR DE ANÚNCIOS
+   PAINEL PROFISSIONAL DE PROPAGANDAS
+========================================================= */
+
+
+/* =========================================================
+   SUPABASE
 ========================================================= */
 
 const SUPABASE_URL =
@@ -17,169 +22,94 @@ const supabaseClient =
 
 
 /* =========================================================
-   CONFIGURAÇÃO
+   ESTADO
 ========================================================= */
 
-const TABLE_NAME = "anuncios";
-
 let anuncios = [];
-let anuncioParaExcluir = null;
+
+let anuncioEditando = null;
 
 
 /* =========================================================
    ELEMENTOS
 ========================================================= */
 
-const sections = {
-  dashboard:
-    document.getElementById("section-dashboard"),
-
-  anuncios:
-    document.getElementById("section-anuncios"),
-
-  novo:
-    document.getElementById("section-novo")
-};
-
-const pageTitle =
-  document.getElementById("pageTitle");
-
-const pageSubtitle =
-  document.getElementById("pageSubtitle");
-
-const usuarioLogado =
-  document.getElementById("usuarioLogado");
-
 const adsGrid =
   document.getElementById("adsGrid");
 
-const recentAds =
-  document.getElementById("recentAds");
+const loading =
+  document.getElementById("loading");
 
-const searchInput =
-  document.getElementById("searchInput");
+const emptyState =
+  document.getElementById("emptyState");
 
-const statusFilter =
-  document.getElementById("statusFilter");
+const modalOverlay =
+  document.getElementById("modalOverlay");
 
 const adForm =
   document.getElementById("adForm");
 
-const adId =
-  document.getElementById("adId");
-
-const adTitle =
-  document.getElementById("adTitle");
-
-const adDescription =
-  document.getElementById("adDescription");
-
-const adLink =
-  document.getElementById("adLink");
-
-const adImage =
-  document.getElementById("adImage");
-
-const adStatus =
-  document.getElementById("adStatus");
-
-const formTitle =
-  document.getElementById("formTitle");
+const searchInput =
+  document.getElementById("searchInput");
 
 const formMessage =
   document.getElementById("formMessage");
-
-const saveBtn =
-  document.getElementById("saveBtn");
-
-const previewImage =
-  document.getElementById("previewImage");
-
-const previewTitle =
-  document.getElementById("previewTitle");
-
-const previewDescription =
-  document.getElementById("previewDescription");
 
 const toast =
   document.getElementById("toast");
 
 
 /* =========================================================
-   NAVEGAÇÃO
+   TOAST
 ========================================================= */
 
-function abrirSecao(nome) {
+let toastTimer;
 
-  Object.values(sections).forEach(
-    section => {
-      if (section) {
-        section.classList.remove("active");
-      }
-    }
-  );
+function mostrarToast(
+  mensagem,
+  tipo = "success"
+) {
 
-  if (sections[nome]) {
-    sections[nome].classList.add("active");
-  }
+  if (!toast) return;
 
+  clearTimeout(toastTimer);
 
-  document
-    .querySelectorAll(".menu-item")
-    .forEach(item => {
+  toast.textContent =
+    mensagem;
 
-      item.classList.toggle(
-        "active",
-        item.dataset.section === nome
-      );
+  toast.className =
+    "toast show " + tipo;
 
-    });
+  toastTimer =
+    setTimeout(
+      function() {
 
+        toast.className =
+          "toast";
 
-  if (nome === "dashboard") {
-
-    pageTitle.textContent =
-      "Dashboard";
-
-    pageSubtitle.textContent =
-      "Gerencie suas propagandas e anúncios.";
-
-  }
-
-
-  if (nome === "anuncios") {
-
-    pageTitle.textContent =
-      "Meus anúncios";
-
-    pageSubtitle.textContent =
-      "Gerencie todas as suas propagandas.";
-
-    renderizarAnuncios();
-
-  }
-
-
-  if (nome === "novo") {
-
-    pageTitle.textContent =
-      adId.value
-        ? "Editar anúncio"
-        : "Novo anúncio";
-
-    pageSubtitle.textContent =
-      "Cadastre ou altere uma propaganda.";
-
-  }
+      },
+      3000
+    );
 
 }
 
 
-function novoAnuncio() {
+/* =========================================================
+   MENSAGEM DO FORMULÁRIO
+========================================================= */
 
-  limparFormulario();
+function mostrarMensagem(
+  mensagem,
+  tipo = ""
+) {
 
-  abrirSecao("novo");
+  if (!formMessage) return;
+
+  formMessage.textContent =
+    mensagem;
+
+  formMessage.className =
+    "form-message " + tipo;
 
 }
 
@@ -200,7 +130,6 @@ async function verificarLogin() {
         .auth
         .getSession();
 
-
     if (
       error ||
       !data ||
@@ -214,19 +143,29 @@ async function verificarLogin() {
 
     }
 
-
-    usuarioLogado.textContent =
+    const email =
       data.session.user.email ||
       "Administrador";
 
+    const usuario =
+      document.getElementById(
+        "usuarioLogado"
+      );
+
+    if (usuario) {
+
+      usuario.textContent =
+        email;
+
+    }
 
     return true;
 
-  } catch (error) {
+  } catch (erro) {
 
     console.error(
-      "Erro ao verificar sessão:",
-      error
+      "Erro de autenticação:",
+      erro
     );
 
     window.location.href =
@@ -245,61 +184,111 @@ async function verificarLogin() {
 
 async function carregarAnuncios() {
 
-  adsGrid.innerHTML = `
-    <div class="loading">
-      ⏳ Carregando anúncios...
-    </div>
-  `;
+  mostrarLoading();
 
+  try {
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from(TABLE_NAME)
-      .select("*")
-      .order("created_at", {
-        ascending: false
-      });
-
-
-  if (error) {
-
-    console.error(
-      "Erro ao carregar anúncios:",
+    const {
+      data,
       error
-    );
+    } =
+      await supabaseClient
+        .from("anuncios")
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
 
-    adsGrid.innerHTML = `
-      <div class="empty-state">
-        <span>⚠️</span>
-        <strong>Não foi possível carregar os anúncios</strong>
-        <p>
-          Verifique se a tabela "anuncios"
-          foi criada no Supabase.
-        </p>
-      </div>
-    `;
+    if (error) {
 
-    anuncios = [];
+      throw error;
+
+    }
+
+    anuncios =
+      data || [];
 
     atualizarEstatisticas();
 
-    return;
+    renderizarAnuncios(
+      anuncios
+    );
+
+  } catch (erro) {
+
+    console.error(
+      "Erro ao carregar anúncios:",
+      erro
+    );
+
+    esconderLoading();
+
+    if (adsGrid) {
+
+      adsGrid.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚠️</div>
+
+          <h3>Não foi possível carregar</h3>
+
+          <p>
+            Verifique se a tabela
+            <strong>anuncios</strong>
+            existe no Supabase.
+          </p>
+        </div>
+      `;
+
+    }
 
   }
 
-
-  anuncios =
-    data || [];
+}
 
 
-  atualizarEstatisticas();
+/* =========================================================
+   LOADING
+========================================================= */
 
-  renderizarAnuncios();
+function mostrarLoading() {
 
-  renderizarRecentes();
+  if (loading) {
+
+    loading.classList.remove(
+      "hidden"
+    );
+
+  }
+
+  if (emptyState) {
+
+    emptyState.classList.add(
+      "hidden"
+    );
+
+  }
+
+  if (adsGrid) {
+
+    adsGrid.innerHTML = "";
+
+  }
+
+}
+
+
+function esconderLoading() {
+
+  if (loading) {
+
+    loading.classList.add(
+      "hidden"
+    );
+
+  }
 
 }
 
@@ -319,117 +308,85 @@ function atualizarEstatisticas() {
         anuncio.ativo === true
     ).length;
 
-  const comLink =
-    anuncios.filter(
-      anuncio =>
-        anuncio.link &&
-        anuncio.link.trim() !== ""
-    ).length;
-
-  const comImagem =
-    anuncios.filter(
-      anuncio =>
-        anuncio.imagem &&
-        anuncio.imagem.trim() !== ""
-    ).length;
+  const inativos =
+    total - ativos;
 
 
-  document.getElementById(
-    "totalAnuncios"
-  ).textContent = total;
+  const totalElement =
+    document.getElementById(
+      "totalAds"
+    );
+
+  const activeElement =
+    document.getElementById(
+      "activeAds"
+    );
+
+  const inactiveElement =
+    document.getElementById(
+      "inactiveAds"
+    );
 
 
-  document.getElementById(
-    "anunciosAtivos"
-  ).textContent = ativos;
+  if (totalElement) {
 
+    totalElement.textContent =
+      total;
 
-  document.getElementById(
-    "anunciosComLink"
-  ).textContent = comLink;
+  }
 
+  if (activeElement) {
 
-  document.getElementById(
-    "anunciosComImagem"
-  ).textContent = comImagem;
+    activeElement.textContent =
+      ativos;
+
+  }
+
+  if (inactiveElement) {
+
+    inactiveElement.textContent =
+      inativos;
+
+  }
 
 }
 
 
 /* =========================================================
-   RENDERIZAR ANÚNCIOS
+   RENDERIZAR
 ========================================================= */
 
-function renderizarAnuncios() {
+function renderizarAnuncios(
+  lista
+) {
 
-  const busca =
-    (searchInput.value || "")
-      .toLowerCase()
-      .trim();
+  esconderLoading();
 
-  const filtro =
-    statusFilter.value;
+  if (!adsGrid) return;
 
 
-  const filtrados =
-    anuncios.filter(
-      anuncio => {
+  if (!lista.length) {
 
-        const texto =
-          (
-            (anuncio.titulo || "") +
-            " " +
-            (anuncio.descricao || "")
-          ).toLowerCase();
+    adsGrid.innerHTML = "";
 
+    if (emptyState) {
 
-        const correspondeBusca =
-          !busca ||
-          texto.includes(busca);
+      emptyState.classList.remove(
+        "hidden"
+      );
 
-
-        let correspondeStatus =
-          true;
-
-
-        if (filtro === "ativos") {
-
-          correspondeStatus =
-            anuncio.ativo === true;
-
-        }
-
-
-        if (filtro === "inativos") {
-
-          correspondeStatus =
-            anuncio.ativo !== true;
-
-        }
-
-
-        return (
-          correspondeBusca &&
-          correspondeStatus
-        );
-
-      }
-    );
-
-
-  if (!filtrados.length) {
-
-    adsGrid.innerHTML = `
-      <div class="empty-state">
-        <span>📢</span>
-        <strong>Nenhum anúncio encontrado</strong>
-        <p>
-          Crie um anúncio ou altere os filtros.
-        </p>
-      </div>
-    `;
+    }
 
     return;
+
+  }
+
+
+  if (emptyState) {
+
+    emptyState.classList.add(
+      "hidden"
+    );
 
   }
 
@@ -437,30 +394,61 @@ function renderizarAnuncios() {
   adsGrid.innerHTML = "";
 
 
-  filtrados.forEach(
-    anuncio => {
+  lista.forEach(
+    function(anuncio) {
 
       const card =
-        document.createElement("article");
+        document.createElement(
+          "article"
+        );
 
       card.className =
         "ad-card";
 
 
       const imagem =
-        anuncio.imagem
+        anuncio.imagem_url
           ? `
             <img
-              src="${escapeHtml(anuncio.imagem)}"
-              alt="${escapeHtml(anuncio.titulo || "Anúncio")}"
-              onerror="this.style.display='none';this.parentElement.innerHTML='<span class=&quot;no-image&quot;>🖼️</span>';"
+              src="${escaparHTML(
+                anuncio.imagem_url
+              )}"
+              alt="${escaparHTML(
+                anuncio.titulo ||
+                "Propaganda"
+              )}"
+              onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=&quot;no-image&quot;>🖼️ Imagem indisponível</span>';"
             >
           `
-          : `<span class="no-image">🖼️</span>`;
+          : `
+            <span class="no-image">
+              🖼️ Sem imagem
+            </span>
+          `;
 
 
-      const ativo =
-        anuncio.ativo === true;
+      const status =
+        anuncio.ativo === true
+          ? `
+            <span class="status-badge status-active">
+              ● ATIVO
+            </span>
+          `
+          : `
+            <span class="status-badge status-inactive">
+              ● INATIVO
+            </span>
+          `;
+
+
+      const descricao =
+        anuncio.descricao ||
+        "Sem descrição cadastrada.";
+
+
+      const link =
+        anuncio.link_url ||
+        "";
 
 
       card.innerHTML = `
@@ -471,36 +459,62 @@ function renderizarAnuncios() {
 
         <div class="ad-body">
 
-          <span class="status-badge ${
-            ativo
-              ? "status-active"
-              : "status-inactive"
-          }">
-            ${
-              ativo
-                ? "🟢 ATIVO"
-                : "🔴 INATIVO"
-            }
-          </span>
+          <div class="ad-title-row">
 
-          <h3>
-            ${escapeHtml(
-              anuncio.titulo ||
-              "Sem título"
-            )}
-          </h3>
+            <div class="ad-title">
+              ${escaparHTML(
+                anuncio.titulo ||
+                "Sem título"
+              )}
+            </div>
 
-          <p>
-            ${escapeHtml(
-              anuncio.descricao ||
-              "Sem descrição."
+            ${status}
+
+          </div>
+
+          <p class="ad-description">
+            ${escaparHTML(
+              descricao
             )}
           </p>
+
+          ${
+            link
+              ? `
+                <a
+                  class="ad-link"
+                  href="${escaparHTML(
+                    link
+                  )}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  🔗 ${escaparHTML(link)}
+                </a>
+              `
+              : `
+                <span class="ad-link">
+                  🔗 Nenhum link cadastrado
+                </span>
+              `
+          }
 
           <div class="ad-actions">
 
             <button
-              class="small-btn edit-btn"
+              class="ad-action"
+              data-action="toggle"
+              data-id="${anuncio.id}"
+            >
+              ${
+                anuncio.ativo
+                  ? "🔴 Desativar"
+                  : "🟢 Ativar"
+              }
+            </button>
+
+            <button
+              class="ad-action"
               data-action="edit"
               data-id="${anuncio.id}"
             >
@@ -508,19 +522,7 @@ function renderizarAnuncios() {
             </button>
 
             <button
-              class="small-btn toggle-btn"
-              data-action="toggle"
-              data-id="${anuncio.id}"
-            >
-              ${
-                ativo
-                  ? "🔴 Desativar"
-                  : "🟢 Ativar"
-              }
-            </button>
-
-            <button
-              class="small-btn delete-btn"
+              class="ad-action delete"
               data-action="delete"
               data-id="${anuncio.id}"
             >
@@ -534,7 +536,9 @@ function renderizarAnuncios() {
       `;
 
 
-      adsGrid.appendChild(card);
+      adsGrid.appendChild(
+        card
+      );
 
     }
   );
@@ -543,162 +547,233 @@ function renderizarAnuncios() {
 
 
 /* =========================================================
-   RECENTES
+   ESCAPAR HTML
 ========================================================= */
 
-function renderizarRecentes() {
+function escaparHTML(valor) {
 
-  const recentes =
-    anuncios.slice(0, 5);
+  return String(valor ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
 
 
-  if (!recentes.length) {
+/* =========================================================
+   MODAL
+========================================================= */
 
-    recentAds.innerHTML = `
-      <div class="empty-state">
-        <span>📢</span>
-        <strong>Nenhum anúncio cadastrado</strong>
-        <p>Crie seu primeiro anúncio.</p>
-      </div>
-    `;
+function abrirModal(
+  anuncio = null
+) {
+
+  anuncioEditando =
+    anuncio;
+
+  const modalTitle =
+    document.getElementById(
+      "modalTitle"
+    );
+
+  const adId =
+    document.getElementById(
+      "adId"
+    );
+
+  const titulo =
+    document.getElementById(
+      "titulo"
+    );
+
+  const imagem =
+    document.getElementById(
+      "imagem_url"
+    );
+
+  const link =
+    document.getElementById(
+      "link_url"
+    );
+
+  const descricao =
+    document.getElementById(
+      "descricao"
+    );
+
+  const intervalo =
+    document.getElementById(
+      "intervalo_minutos"
+    );
+
+  const ativo =
+    document.getElementById(
+      "ativo"
+    );
+
+
+  if (anuncio) {
+
+    modalTitle.textContent =
+      "Editar propaganda";
+
+    adId.value =
+      anuncio.id || "";
+
+    titulo.value =
+      anuncio.titulo || "";
+
+    imagem.value =
+      anuncio.imagem_url || "";
+
+    link.value =
+      anuncio.link_url || "";
+
+    descricao.value =
+      anuncio.descricao || "";
+
+    intervalo.value =
+      anuncio.intervalo_minutos ?? 0;
+
+    ativo.checked =
+      anuncio.ativo === true;
+
+  } else {
+
+    modalTitle.textContent =
+      "Nova propaganda";
+
+    adForm.reset();
+
+    adId.value =
+      "";
+
+    intervalo.value =
+      "0";
+
+    ativo.checked =
+      true;
+
+  }
+
+
+  atualizarStatusTexto();
+
+  atualizarPreview();
+
+
+  modalOverlay.classList.remove(
+    "hidden"
+  );
+
+  document.body.style.overflow =
+    "hidden";
+
+
+  setTimeout(
+    function() {
+
+      titulo.focus();
+
+    },
+    100
+  );
+
+}
+
+
+function fecharModal() {
+
+  modalOverlay.classList.add(
+    "hidden"
+  );
+
+  document.body.style.overflow =
+    "";
+
+  anuncioEditando =
+    null;
+
+  mostrarMensagem("");
+
+}
+
+
+/* =========================================================
+   PREVIEW DA IMAGEM
+========================================================= */
+
+function atualizarPreview() {
+
+  const url =
+    document.getElementById(
+      "imagem_url"
+    ).value.trim();
+
+  const preview =
+    document.getElementById(
+      "imagePreview"
+    );
+
+  const image =
+    document.getElementById(
+      "previewImg"
+    );
+
+
+  if (
+    !url ||
+    !preview ||
+    !image
+  ) {
+
+    if (preview) {
+
+      preview.classList.add(
+        "hidden"
+      );
+
+    }
 
     return;
 
   }
 
 
-  recentAds.innerHTML = "";
+  image.src =
+    url;
 
-
-  recentes.forEach(
-    anuncio => {
-
-      const item =
-        document.createElement("div");
-
-      item.className =
-        "recent-item";
-
-
-      item.innerHTML = `
-
-        <div>
-
-          <strong>
-            ${escapeHtml(
-              anuncio.titulo ||
-              "Sem título"
-            )}
-          </strong>
-
-          <span>
-            ${
-              anuncio.ativo
-                ? "Anúncio ativo"
-                : "Anúncio inativo"
-            }
-          </span>
-
-        </div>
-
-        <span class="status-badge ${
-          anuncio.ativo
-            ? "status-active"
-            : "status-inactive"
-        }">
-
-          ${
-            anuncio.ativo
-              ? "ATIVO"
-              : "INATIVO"
-          }
-
-        </span>
-
-      `;
-
-
-      recentAds.appendChild(item);
-
-    }
+  preview.classList.remove(
+    "hidden"
   );
 
 }
 
 
 /* =========================================================
-   FORMULÁRIO
+   STATUS TEXTO
 ========================================================= */
 
-function limparFormulario() {
+function atualizarStatusTexto() {
 
-  adForm.reset();
-
-  adId.value = "";
-
-  adStatus.value =
-    "true";
-
-  formTitle.textContent =
-    "Novo anúncio";
-
-  saveBtn.textContent =
-    "💾 Salvar anúncio";
-
-  formMessage.textContent = "";
-
-  atualizarPreview();
-
-}
-
-
-function editarAnuncio(id) {
-
-  const anuncio =
-    anuncios.find(
-      item =>
-        String(item.id) ===
-        String(id)
+  const ativo =
+    document.getElementById(
+      "ativo"
     );
 
+  const texto =
+    document.getElementById(
+      "statusText"
+    );
 
-  if (!anuncio) return;
+  if (!ativo || !texto) return;
 
-
-  adId.value =
-    anuncio.id || "";
-
-  adTitle.value =
-    anuncio.titulo || "";
-
-  adDescription.value =
-    anuncio.descricao || "";
-
-  adLink.value =
-    anuncio.link || "";
-
-  adImage.value =
-    anuncio.imagem || "";
-
-  adStatus.value =
-    anuncio.ativo
-      ? "true"
-      : "false";
-
-
-  formTitle.textContent =
-    "Editar anúncio";
-
-  saveBtn.textContent =
-    "💾 Salvar alterações";
-
-
-  formMessage.textContent = "";
-
-
-  atualizarPreview();
-
-  abrirSecao("novo");
+  texto.textContent =
+    ativo.checked
+      ? "Ativo"
+      : "Inativo";
 
 }
 
@@ -707,31 +782,66 @@ function editarAnuncio(id) {
    SALVAR
 ========================================================= */
 
-async function salvarAnuncio(event) {
+async function salvarAnuncio(
+  evento
+) {
 
-  event.preventDefault();
-
-
-  const titulo =
-    adTitle.value.trim();
-
-  const descricao =
-    adDescription.value.trim();
-
-  const link =
-    adLink.value.trim();
-
-  const imagem =
-    adImage.value.trim();
-
-  const ativo =
-    adStatus.value === "true";
+  evento.preventDefault();
 
 
-  if (!titulo) {
+  const saveBtn =
+    document.getElementById(
+      "saveBtn"
+    );
+
+
+  const id =
+    document.getElementById(
+      "adId"
+    ).value;
+
+
+  const dados = {
+
+    titulo:
+      document.getElementById(
+        "titulo"
+      ).value.trim(),
+
+    imagem_url:
+      document.getElementById(
+        "imagem_url"
+      ).value.trim() || null,
+
+    link_url:
+      document.getElementById(
+        "link_url"
+      ).value.trim() || null,
+
+    descricao:
+      document.getElementById(
+        "descricao"
+      ).value.trim() || null,
+
+    ativo:
+      document.getElementById(
+        "ativo"
+      ).checked,
+
+    intervalo_minutos:
+      Number(
+        document.getElementById(
+          "intervalo_minutos"
+        ).value
+      ) || 0
+
+  };
+
+
+  if (!dados.titulo) {
 
     mostrarMensagem(
-      "Digite um título para o anúncio.",
+      "Digite o título da propaganda.",
       "error"
     );
 
@@ -740,110 +850,92 @@ async function salvarAnuncio(event) {
   }
 
 
-  saveBtn.disabled = true;
+  saveBtn.disabled =
+    true;
 
   saveBtn.textContent =
     "⏳ Salvando...";
 
 
-  const dados = {
+  try {
 
-    titulo,
-
-    descricao,
-
-    link,
-
-    imagem,
-
-    ativo
-
-  };
+    let resposta;
 
 
-  let resultado;
+    if (id) {
+
+      resposta =
+        await supabaseClient
+          .from("anuncios")
+          .update(dados)
+          .eq("id", id)
+          .select()
+          .single();
+
+    } else {
+
+      resposta =
+        await supabaseClient
+          .from("anuncios")
+          .insert(dados)
+          .select()
+          .single();
+
+    }
 
 
-  if (adId.value) {
+    if (resposta.error) {
 
-    resultado =
-      await supabaseClient
-        .from(TABLE_NAME)
-        .update(dados)
-        .eq("id", adId.value);
+      throw resposta.error;
 
-  } else {
-
-    resultado =
-      await supabaseClient
-        .from(TABLE_NAME)
-        .insert(dados);
-
-  }
+    }
 
 
-  if (resultado.error) {
+    fecharModal();
+
+    mostrarToast(
+      id
+        ? "Propaganda atualizada com sucesso!"
+        : "Propaganda criada com sucesso!",
+      "success"
+    );
+
+
+    await carregarAnuncios();
+
+
+  } catch (erro) {
 
     console.error(
       "Erro ao salvar:",
-      resultado.error
+      erro
     );
 
-
     mostrarMensagem(
-      "Erro ao salvar. Verifique a tabela no Supabase.",
+      "Não foi possível salvar. Verifique a tabela anuncios e as permissões do Supabase.",
       "error"
     );
 
+  } finally {
 
-    saveBtn.disabled = false;
+    saveBtn.disabled =
+      false;
 
     saveBtn.textContent =
-      adId.value
-        ? "💾 Salvar alterações"
-        : "💾 Salvar anúncio";
-
-    return;
+      "💾 Salvar propaganda";
 
   }
-
-
-  mostrarMensagem(
-    "Anúncio salvo com sucesso!",
-    "success"
-  );
-
-
-  mostrarToast(
-    "Anúncio salvo com sucesso!"
-  );
-
-
-  await carregarAnuncios();
-
-
-  setTimeout(
-    () => {
-
-      limparFormulario();
-
-      abrirSecao("anuncios");
-
-    },
-    600
-  );
-
-
-  saveBtn.disabled = false;
 
 }
 
 
 /* =========================================================
-   ATIVAR / DESATIVAR
+   EDITAR
 ========================================================= */
 
-async function alternarAnuncio(id) {
+function editarAnuncio(
+  id
+) {
 
   const anuncio =
     anuncios.find(
@@ -852,49 +944,92 @@ async function alternarAnuncio(id) {
         String(id)
     );
 
-
-  if (!anuncio) return;
-
-
-  const novoStatus =
-    anuncio.ativo !== true;
-
-
-  const {
-    error
-  } =
-    await supabaseClient
-      .from(TABLE_NAME)
-      .update({
-        ativo: novoStatus
-      })
-      .eq("id", id);
-
-
-  if (error) {
-
-    console.error(
-      "Erro ao alterar status:",
-      error
-    );
+  if (!anuncio) {
 
     mostrarToast(
-      "Não foi possível alterar o status."
+      "Propaganda não encontrada.",
+      "error"
     );
 
     return;
 
   }
 
-
-  mostrarToast(
-    novoStatus
-      ? "Anúncio ativado!"
-      : "Anúncio desativado!"
+  abrirModal(
+    anuncio
   );
 
+}
 
-  await carregarAnuncios();
+
+/* =========================================================
+   ATIVAR / DESATIVAR
+========================================================= */
+
+async function alternarStatus(
+  id
+) {
+
+  const anuncio =
+    anuncios.find(
+      item =>
+        String(item.id) ===
+        String(id)
+    );
+
+  if (!anuncio) return;
+
+
+  try {
+
+    const novoStatus =
+      !anuncio.ativo;
+
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from("anuncios")
+        .update({
+          ativo: novoStatus
+        })
+        .eq(
+          "id",
+          anuncio.id
+        );
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+    mostrarToast(
+      novoStatus
+        ? "Propaganda ativada!"
+        : "Propaganda desativada!",
+      "success"
+    );
+
+
+    await carregarAnuncios();
+
+
+  } catch (erro) {
+
+    console.error(
+      erro
+    );
+
+    mostrarToast(
+      "Não foi possível alterar o status.",
+      "error"
+    );
+
+  }
 
 }
 
@@ -903,111 +1038,70 @@ async function alternarAnuncio(id) {
    EXCLUIR
 ========================================================= */
 
-function solicitarExclusao(id) {
+async function excluirAnuncio(
+  id
+) {
 
-  anuncioParaExcluir =
-    id;
+  const anuncio =
+    anuncios.find(
+      item =>
+        String(item.id) ===
+        String(id)
+    );
 
-  document
-    .getElementById("deleteModal")
-    .classList.add("show");
-
-}
-
-
-async function confirmarExclusao() {
-
-  if (!anuncioParaExcluir) {
-    return;
-  }
+  if (!anuncio) return;
 
 
-  const id =
-    anuncioParaExcluir;
+  const confirmar =
+    window.confirm(
+      `Deseja realmente excluir a propaganda "${anuncio.titulo}"?`
+    );
 
 
-  const {
-    error
-  } =
-    await supabaseClient
-      .from(TABLE_NAME)
-      .delete()
-      .eq("id", id);
+  if (!confirmar) return;
 
 
-  if (error) {
+  try {
 
-    console.error(
-      "Erro ao excluir:",
+    const {
       error
-    );
+    } =
+      await supabaseClient
+        .from("anuncios")
+        .delete()
+        .eq(
+          "id",
+          anuncio.id
+        );
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
 
     mostrarToast(
-      "Não foi possível excluir o anúncio."
+      "Propaganda excluída.",
+      "success"
     );
 
-  } else {
-
-    mostrarToast(
-      "Anúncio excluído!"
-    );
 
     await carregarAnuncios();
 
-  }
 
+  } catch (erro) {
 
-  fecharModal();
+    console.error(
+      "Erro ao excluir:",
+      erro
+    );
 
-}
-
-
-function fecharModal() {
-
-  anuncioParaExcluir =
-    null;
-
-  document
-    .getElementById("deleteModal")
-    .classList.remove("show");
-
-}
-
-
-/* =========================================================
-   PREVIEW
-========================================================= */
-
-function atualizarPreview() {
-
-  previewTitle.textContent =
-    adTitle.value.trim() ||
-    "Título do anúncio";
-
-
-  previewDescription.textContent =
-    adDescription.value.trim() ||
-    "A descrição do anúncio aparecerá aqui.";
-
-
-  const imagem =
-    adImage.value.trim();
-
-
-  if (imagem) {
-
-    previewImage.innerHTML = `
-      <img
-        src="${escapeHtml(imagem)}"
-        alt="Prévia do anúncio"
-        onerror="this.style.display='none';this.parentElement.innerHTML='🖼️';"
-      >
-    `;
-
-  } else {
-
-    previewImage.innerHTML =
-      "🖼️";
+    mostrarToast(
+      "Não foi possível excluir.",
+      "error"
+    );
 
   }
 
@@ -1015,281 +1109,436 @@ function atualizarPreview() {
 
 
 /* =========================================================
-   MENSAGENS
+   PESQUISA
 ========================================================= */
 
-function mostrarMensagem(
-  texto,
-  tipo
-) {
+function pesquisar() {
 
-  formMessage.textContent =
-    texto;
-
-  formMessage.className =
-    "form-message " +
-    (tipo || "");
-
-}
+  const termo =
+    searchInput.value
+      .trim()
+      .toLowerCase();
 
 
-function mostrarToast(texto) {
+  if (!termo) {
 
-  toast.textContent =
-    texto;
+    renderizarAnuncios(
+      anuncios
+    );
 
-  toast.classList.add("show");
+    return;
+
+  }
 
 
-  setTimeout(
-    () => {
+  const filtrados =
+    anuncios.filter(
+      function(anuncio) {
 
-      toast.classList.remove("show");
+        return (
 
-    },
-    3000
+          String(
+            anuncio.titulo || ""
+          )
+            .toLowerCase()
+            .includes(termo)
+
+          ||
+
+          String(
+            anuncio.descricao || ""
+          )
+            .toLowerCase()
+            .includes(termo)
+
+          ||
+
+          String(
+            anuncio.link_url || ""
+          )
+            .toLowerCase()
+            .includes(termo)
+
+        );
+
+      }
+    );
+
+
+  renderizarAnuncios(
+    filtrados
   );
 
 }
 
 
 /* =========================================================
-   SEGURANÇA BÁSICA DE HTML
+   EVENTOS DOS CARDS
 ========================================================= */
 
-function escapeHtml(valor) {
+if (adsGrid) {
 
-  return String(valor || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  adsGrid.addEventListener(
+    "click",
+    function(event) {
+
+      const botao =
+        event.target.closest(
+          "button[data-action]"
+        );
+
+      if (!botao) return;
+
+
+      const acao =
+        botao.dataset.action;
+
+      const id =
+        botao.dataset.id;
+
+
+      if (acao === "edit") {
+
+        editarAnuncio(id);
+
+      }
+
+      else if (
+        acao === "toggle"
+      ) {
+
+        alternarStatus(id);
+
+      }
+
+      else if (
+        acao === "delete"
+      ) {
+
+        excluirAnuncio(id);
+
+      }
+
+    }
+  );
 
 }
 
 
 /* =========================================================
-   EVENTOS
+   LOGOUT
+========================================================= */
+
+async function sair() {
+
+  const botao =
+    document.getElementById(
+      "logoutBtn"
+    );
+
+
+  if (botao) {
+
+    botao.disabled =
+      true;
+
+    botao.textContent =
+      "Saindo...";
+
+  }
+
+
+  try {
+
+    await supabaseClient
+      .auth
+      .signOut({
+        scope: "local"
+      });
+
+  } catch (erro) {
+
+    console.error(
+      "Erro ao sair:",
+      erro
+    );
+
+  }
+
+
+  window.location.href =
+    "index.html";
+
+}
+
+
+/* =========================================================
+   INICIALIZAÇÃO
 ========================================================= */
 
 document.addEventListener(
   "DOMContentLoaded",
   async function() {
 
+    const year =
+      document.getElementById(
+        "year"
+      );
+
+    if (year) {
+
+      year.textContent =
+        new Date()
+          .getFullYear();
+
+    }
+
+
     const autenticado =
       await verificarLogin();
 
 
     if (!autenticado) {
+
       return;
+
     }
 
 
     await carregarAnuncios();
 
 
-    /* MENU */
+    /* NOVO */
 
-    document
-      .querySelectorAll(".menu-item")
-      .forEach(item => {
+    const newAdBtn =
+      document.getElementById(
+        "newAdBtn"
+      );
 
-        item.addEventListener(
-          "click",
-          () => {
+    if (newAdBtn) {
 
-            abrirSecao(
-              item.dataset.section
-            );
-
-          }
-        );
-
-      });
-
-
-    /* BOTÕES NOVO */
-
-    document
-      .getElementById("newAdBtn")
-      .addEventListener(
+      newAdBtn.addEventListener(
         "click",
-        novoAnuncio
+        function() {
+
+          abrirModal();
+
+        }
       );
 
+    }
 
-    document
-      .getElementById("newAdTopBtn")
-      .addEventListener(
+
+    const emptyNewBtn =
+      document.getElementById(
+        "emptyNewBtn"
+      );
+
+    if (emptyNewBtn) {
+
+      emptyNewBtn.addEventListener(
         "click",
-        novoAnuncio
-      );
+        function() {
 
-
-    /* BOTÃO CANCELAR */
-
-    document
-      .getElementById("cancelBtn")
-      .addEventListener(
-        "click",
-        () => {
-
-          limparFormulario();
-
-          abrirSecao("anuncios");
+          abrirModal();
 
         }
       );
 
-
-    /* FORM */
-
-    adForm.addEventListener(
-      "submit",
-      salvarAnuncio
-    );
+    }
 
 
-    /* PREVIEW */
+    /* FECHAR */
 
-    [
-      adTitle,
-      adDescription,
-      adImage
-    ].forEach(
-      campo => {
-
-        campo.addEventListener(
-          "input",
-          atualizarPreview
-        );
-
-      }
-    );
-
-
-    /* BUSCA */
-
-    searchInput.addEventListener(
-      "input",
-      renderizarAnuncios
-    );
-
-
-    statusFilter.addEventListener(
-      "change",
-      renderizarAnuncios
-    );
-
-
-    /* AÇÕES DOS CARDS */
-
-    adsGrid.addEventListener(
-      "click",
-      event => {
-
-        const botao =
-          event.target.closest(
-            "button[data-action]"
-          );
-
-
-        if (!botao) return;
-
-
-        const id =
-          botao.dataset.id;
-
-        const action =
-          botao.dataset.action;
-
-
-        if (action === "edit") {
-
-          editarAnuncio(id);
-
-        }
-
-
-        if (action === "toggle") {
-
-          alternarAnuncio(id);
-
-        }
-
-
-        if (action === "delete") {
-
-          solicitarExclusao(id);
-
-        }
-
-      }
-    );
-
-
-    /* VER TODOS */
-
-    document
-      .querySelectorAll(
-        "[data-go-section]"
-      )
-      .forEach(
-        botao => {
-
-          botao.addEventListener(
-            "click",
-            () => {
-
-              abrirSecao(
-                botao.dataset.goSection
-              );
-
-            }
-          );
-
-        }
+    const closeModalBtn =
+      document.getElementById(
+        "closeModalBtn"
       );
 
+    if (closeModalBtn) {
 
-    /* MODAL */
-
-    document
-      .getElementById("cancelDelete")
-      .addEventListener(
+      closeModalBtn.addEventListener(
         "click",
         fecharModal
       );
 
+    }
 
-    document
-      .getElementById("confirmDelete")
-      .addEventListener(
-        "click",
-        confirmarExclusao
+
+    const cancelBtn =
+      document.getElementById(
+        "cancelBtn"
       );
+
+    if (cancelBtn) {
+
+      cancelBtn.addEventListener(
+        "click",
+        fecharModal
+      );
+
+    }
+
+
+    /* FORM */
+
+    if (adForm) {
+
+      adForm.addEventListener(
+        "submit",
+        salvarAnuncio
+      );
+
+    }
+
+
+    /* PESQUISA */
+
+    if (searchInput) {
+
+      searchInput.addEventListener(
+        "input",
+        pesquisar
+      );
+
+    }
+
+
+    /* STATUS */
+
+    const ativo =
+      document.getElementById(
+        "ativo"
+      );
+
+    if (ativo) {
+
+      ativo.addEventListener(
+        "change",
+        atualizarStatusTexto
+      );
+
+    }
+
+
+    /* PREVIEW */
+
+    const imagem =
+      document.getElementById(
+        "imagem_url"
+      );
+
+    if (imagem) {
+
+      imagem.addEventListener(
+        "input",
+        atualizarPreview
+      );
+
+    }
+
+
+    /* ATUALIZAR */
+
+    const refreshBtn =
+      document.getElementById(
+        "refreshBtn"
+      );
+
+    if (refreshBtn) {
+
+      refreshBtn.addEventListener(
+        "click",
+        function() {
+
+          carregarAnuncios();
+
+        }
+      );
+
+    }
+
+
+    const refreshMenu =
+      document.getElementById(
+        "refreshMenu"
+      );
+
+    if (refreshMenu) {
+
+      refreshMenu.addEventListener(
+        "click",
+        function(event) {
+
+          event.preventDefault();
+
+          carregarAnuncios();
+
+        }
+      );
+
+    }
 
 
     /* LOGOUT */
 
-    document
-      .getElementById("logoutBtn")
-      .addEventListener(
+    const logoutBtn =
+      document.getElementById(
+        "logoutBtn"
+      );
+
+    if (logoutBtn) {
+
+      logoutBtn.addEventListener(
         "click",
-        async () => {
+        sair
+      );
 
-          await supabaseClient
-            .auth
-            .signOut({
-              scope: "local"
-            });
+    }
 
-          window.location.href =
-            "index.html";
+
+    /* ESC */
+
+    document.addEventListener(
+      "keydown",
+      function(event) {
+
+        if (
+          event.key === "Escape" &&
+          !modalOverlay.classList.contains(
+            "hidden"
+          )
+        ) {
+
+          fecharModal();
+
+        }
+
+      }
+    );
+
+
+    /* CLIQUE FORA DO MODAL */
+
+    if (modalOverlay) {
+
+      modalOverlay.addEventListener(
+        "click",
+        function(event) {
+
+          if (
+            event.target ===
+            modalOverlay
+          ) {
+
+            fecharModal();
+
+          }
 
         }
       );
+
+    }
 
   }
 );
