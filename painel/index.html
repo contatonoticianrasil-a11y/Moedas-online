@@ -1,34 +1,74 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Gonçalves Câmbio | Painel</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-  <link rel="stylesheet" href="painel.css">
+  <title>Gonçalves Câmbio | Painel Administrativo</title>
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta
+    name="description"
+    content="Painel administrativo do Gonçalves Câmbio"
+  >
+
+  <link
+    rel="stylesheet"
+    href="painel.css"
+  >
+
+  <!-- SUPABASE -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
 </head>
+
 
 <body>
 
-  <div class="login-container">
+  <main class="login-container">
 
-    <div class="login-box">
+    <section
+      class="login-box"
+      aria-label="Login administrativo"
+    >
 
-      <div class="logo">
+      <!-- LOGO -->
+
+      <div
+        class="logo"
+        aria-hidden="true"
+      >
         💱
       </div>
 
-      <h1>Gonçalves Câmbio</h1>
+
+      <!-- TÍTULO -->
+
+      <h1>
+        Gonçalves Câmbio
+      </h1>
+
 
       <p class="subtitle">
         Painel Administrativo
       </p>
 
-      <form id="loginForm">
+
+      <!-- LOGIN -->
+
+      <form
+        id="loginForm"
+        autocomplete="on"
+      >
+
+        <!-- E-MAIL -->
 
         <label for="email">
           E-mail
@@ -37,34 +77,45 @@
         <input
           type="email"
           id="email"
+          name="email"
           placeholder="Digite seu e-mail"
           required
           autocomplete="email"
         >
 
+
+        <!-- SENHA -->
+
         <label for="password">
           Senha
         </label>
+
 
         <div class="password-box">
 
           <input
             type="password"
             id="password"
+            name="password"
             placeholder="Digite sua senha"
             required
             autocomplete="current-password"
           >
 
+
           <button
             type="button"
             id="mostrarSenha"
             class="show-password"
+            aria-label="Mostrar ou ocultar senha"
           >
             👁️
           </button>
 
         </div>
+
+
+        <!-- BOTÃO -->
 
         <button
           type="submit"
@@ -74,18 +125,27 @@
           Entrar no painel
         </button>
 
+
+        <!-- MENSAGEM -->
+
         <div
           id="loginMessage"
           class="login-message"
+          role="alert"
+          aria-live="polite"
         ></div>
 
       </form>
 
-    </div>
+    </section>
 
-  </div>
+  </main>
+
+
+  <!-- SEU JAVASCRIPT -->
 
   <script src="painel.js"></script>
 
 </body>
+
 </html>
