@@ -776,3 +776,211 @@ window.addEventListener(
 
   }
 );
+/* =========================
+   GRÁFICO DO DÓLAR
+========================= */
+
+let graficoMoeda = null;
+
+async function carregarGrafico(codigo = "USD") {
+
+  const canvas = document.getElementById("currencyChart");
+  const mensagem = document.getElementById("chartMessage");
+
+  if (!canvas) {
+    return;
+  }
+
+  mensagem.style.display = "flex";
+  mensagem.textContent = "Carregando histórico...";
+
+  try {
+
+    const hoje = new Date();
+
+    const final = hoje.toISOString().slice(0, 10);
+
+    const inicioData = new Date();
+
+    inicioData.setDate(
+      inicioData.getDate() - 7
+    );
+
+    const inicio =
+      inicioData.toISOString().slice(0, 10);
+
+
+    const url =
+      `https://api.frankfurter.app/${inicio}..${final}?from=BRL&to=${codigo}`;
+
+
+    const resposta =
+      await fetch(url);
+
+
+    if (!resposta.ok) {
+      throw new Error("Erro ao buscar histórico");
+    }
+
+
+    const dados =
+      await resposta.json();
+
+
+    const datas =
+      Object.keys(dados.rates);
+
+
+    const valores =
+      datas.map(data => {
+
+        const taxa =
+          dados.rates[data][codigo];
+
+        return 1 / taxa;
+
+      });
+
+
+    const nomesDatas =
+      datas.map(data => {
+
+        const partes =
+          data.split("-");
+
+        return `${partes[2]}/${partes[1]}`;
+
+      });
+
+
+    mensagem.style.display = "none";
+
+
+    if (graficoMoeda) {
+      graficoMoeda.destroy();
+    }
+
+
+    graficoMoeda =
+      new Chart(canvas, {
+
+        type: "line",
+
+        data: {
+
+          labels: nomesDatas,
+
+          datasets: [
+
+            {
+
+              label:
+                `1 ${codigo} em reais`,
+
+              data: valores,
+
+              borderWidth: 3,
+
+              tension: 0.35,
+
+              fill: true,
+
+              pointRadius: 4,
+
+              pointHoverRadius: 6
+
+            }
+
+          ]
+
+        },
+
+        options: {
+
+          responsive: true,
+
+          maintainAspectRatio: false,
+
+          plugins: {
+
+            legend: {
+              display: true
+            }
+
+          },
+
+          scales: {
+
+            y: {
+
+              ticks: {
+
+                callback: function(valor) {
+
+                  return new Intl.NumberFormat(
+                    "pt-BR",
+                    {
+                      style: "currency",
+                      currency: "BRL"
+                    }
+                  ).format(valor);
+
+                }
+
+              }
+
+            }
+
+          }
+
+        }
+
+      });
+
+
+  } catch (erro) {
+
+    console.error(
+      "Erro no gráfico:",
+      erro
+    );
+
+    mensagem.style.display = "flex";
+
+    mensagem.textContent =
+      "Histórico indisponível no momento.";
+
+  }
+
+}
+
+
+/* =========================
+   SELETOR
+========================= */
+
+const seletorGrafico =
+  document.getElementById(
+    "chartCurrency"
+  );
+
+
+if (seletorGrafico) {
+
+  seletorGrafico.addEventListener(
+    "change",
+    function() {
+
+      carregarGrafico(
+        this.value
+      );
+
+    }
+  );
+
+
+  carregarGrafico(
+    seletorGrafico.value
+  );
+
+}
