@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Gonçalves Câmbio | Propagandas</title>
+  <title>Gonçalves Câmbio | Painel</title>
 
   <link rel="stylesheet" href="dashboard.css">
 
@@ -14,357 +13,505 @@
 
 <body>
 
-<div class="app">
+  <div class="admin-layout">
 
-  <aside class="sidebar">
+    <!-- SIDEBAR -->
 
-    <div class="brand">
-      <div class="brand-icon">💱</div>
+    <aside class="sidebar">
 
-      <div>
-        <strong>Gonçalves</strong>
-        <span>Câmbio</span>
-      </div>
-    </div>
-
-    <nav>
-      <button class="menu active">
-        📢 <span>Propagandas</span>
-      </button>
-
-      <button
-        class="menu"
-        id="refreshBtnMenu"
-      >
-        🔄 <span>Atualizar</span>
-      </button>
-    </nav>
-
-    <div class="sidebar-bottom">
-
-      <div class="protected">
-        🛡️
-        <div>
-          <strong>Painel protegido</strong>
-          <small>Supabase Auth</small>
-        </div>
-      </div>
-
-      <button
-        id="logoutBtn"
-        class="logout"
-      >
-        🚪 Sair
-      </button>
-
-    </div>
-
-  </aside>
-
-
-  <main class="main">
-
-    <header class="topbar">
-
-      <div class="mobile-brand">
-        💱 Gonçalves Câmbio
-      </div>
-
-      <div class="user">
-
-        <div class="avatar">
-          👤
-        </div>
+      <div class="brand">
+        <div class="brand-icon">💱</div>
 
         <div>
-          <strong>Administrador</strong>
-          <span id="usuarioLogado">
-            Carregando...
-          </span>
+          <strong>Gonçalves</strong>
+          <span>Câmbio</span>
         </div>
-
       </div>
 
-    </header>
+      <nav class="navigation">
 
-
-    <div class="content">
-
-      <section class="heading">
-
-        <div>
-          <small>GERENCIAMENTO</small>
-
-          <h1>Propagandas</h1>
-
-          <p>
-            Controle os anúncios exibidos no seu site.
-          </p>
-        </div>
-
-        <button
-          id="newAdBtn"
-          class="primary"
-        >
-          ＋ Nova propaganda
+        <button class="nav-item active" type="button">
+          <span>📊</span>
+          Dashboard
         </button>
 
-      </section>
-
-
-      <section class="stats">
-
-        <div class="stat">
-          <div class="stat-icon blue">📢</div>
-          <div>
-            <span>Total de anúncios</span>
-            <strong id="totalAds">0</strong>
-          </div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-icon green">🟢</div>
-          <div>
-            <span>Anúncios ativos</span>
-            <strong id="activeAds">0</strong>
-          </div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-icon red">🔴</div>
-          <div>
-            <span>Anúncios inativos</span>
-            <strong id="inactiveAds">0</strong>
-          </div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-icon gold">👁️</div>
-          <div>
-            <span>Sistema</span>
-            <strong class="online">ONLINE</strong>
-          </div>
-        </div>
-
-      </section>
-
-
-      <section class="toolbar">
-
-        <div class="search">
-          🔎
-          <input
-            id="searchInput"
-            type="search"
-            placeholder="Pesquisar propaganda..."
-          >
-        </div>
-
-        <button
-          id="refreshBtn"
-          class="secondary"
-        >
-          ↻ Atualizar
+        <button class="nav-item" type="button" id="navAds">
+          <span>📢</span>
+          Propagandas
         </button>
 
-      </section>
+        <button class="nav-item" type="button" id="navRefresh">
+          <span>🔄</span>
+          Atualizar
+        </button>
 
+      </nav>
 
-      <section class="panel">
+      <div class="sidebar-footer">
 
-        <div class="panel-header">
+        <div class="secure">
+          🛡️
           <div>
-            <h2>Suas propagandas</h2>
+            <strong>Sistema protegido</strong>
+            <small>Supabase Auth</small>
+          </div>
+        </div>
+
+        <button id="logoutBtn" class="logout-btn">
+          🚪 Sair
+        </button>
+
+      </div>
+
+    </aside>
+
+
+    <!-- ÁREA PRINCIPAL -->
+
+    <main class="main">
+
+      <header class="topbar">
+
+        <div class="mobile-title">
+          💱 Gonçalves Câmbio
+        </div>
+
+        <div class="topbar-right">
+
+          <div class="user">
+
+            <div class="avatar">
+              👤
+            </div>
+
+            <div>
+              <strong>Administrador</strong>
+              <span id="usuarioLogado">Carregando...</span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </header>
+
+
+      <div class="content">
+
+        <!-- CABEÇALHO -->
+
+        <section class="hero">
+
+          <div>
+
+            <span class="eyebrow">
+              PAINEL ADMINISTRATIVO
+            </span>
+
+            <h1>
+              Dashboard
+            </h1>
+
             <p>
-              Gerencie todos os anúncios cadastrados.
+              Gerencie suas propagandas de forma simples e profissional.
             </p>
+
           </div>
-        </div>
 
-        <div
-          id="loading"
-          class="loading"
-        >
-          <div class="spinner"></div>
-          Carregando propagandas...
-        </div>
+          <button id="newAdBtn" class="primary-btn">
+            ＋ Nova propaganda
+          </button>
 
-        <div
-          id="emptyState"
-          class="empty hidden"
-        >
-          <div>📢</div>
-          <h3>Nenhuma propaganda cadastrada</h3>
-          <p>Comece criando sua primeira propaganda.</p>
+        </section>
+
+
+        <!-- ESTATÍSTICAS -->
+
+        <section class="stats">
+
+          <div class="stat-card">
+
+            <div class="stat-icon blue">
+              📢
+            </div>
+
+            <div>
+              <span>Total de anúncios</span>
+              <strong id="totalAds">0</strong>
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-icon green">
+              🟢
+            </div>
+
+            <div>
+              <span>Anúncios ativos</span>
+              <strong id="activeAds">0</strong>
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-icon red">
+              🔴
+            </div>
+
+            <div>
+              <span>Anúncios inativos</span>
+              <strong id="inactiveAds">0</strong>
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-icon gold">
+              👁️
+            </div>
+
+            <div>
+              <span>Sistema</span>
+              <strong class="online">
+                ONLINE
+              </strong>
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- BARRA DE CONTROLE -->
+
+        <section class="control-bar">
+
+          <div class="search">
+
+            <span>🔎</span>
+
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Pesquisar anúncios..."
+            >
+
+          </div>
 
           <button
-            id="emptyNewBtn"
-            class="primary"
+            id="refreshBtn"
+            class="secondary-btn"
           >
-            ＋ Criar propaganda
+            ↻ Atualizar
           </button>
-        </div>
 
-        <div
-          id="adsGrid"
-          class="ads-grid"
-        ></div>
-
-      </section>
-
-    </div>
+        </section>
 
 
-    <footer>
-      © <span id="year"></span> Gonçalves Câmbio
-      <span>Painel Administrativo</span>
-    </footer>
+        <!-- ANÚNCIOS -->
 
-  </main>
+        <section class="panel">
 
-</div>
+          <div class="panel-header">
 
+            <div>
 
-<div
-  id="modalOverlay"
-  class="modal-overlay hidden"
->
+              <span class="panel-label">
+                GERENCIAMENTO
+              </span>
 
-  <div class="modal">
+              <h2>
+                Suas propagandas
+              </h2>
 
-    <div class="modal-header">
+              <p>
+                Controle todos os anúncios exibidos no site.
+              </p>
 
-      <div>
-        <small>ANÚNCIO</small>
-        <h2 id="modalTitle">
-          Nova propaganda
-        </h2>
-      </div>
+            </div>
 
-      <button
-        id="closeModalBtn"
-        class="close"
-      >
-        ×
-      </button>
-
-    </div>
+          </div>
 
 
-    <form id="adForm">
+          <div id="loading" class="loading">
 
-      <input
-        type="hidden"
-        id="adId"
-      >
+            <div class="spinner"></div>
 
-      <label>
-        Título da propaganda
-        <input
-          id="titulo"
-          type="text"
-          placeholder="Ex.: Oferta especial"
-          required
-        >
-      </label>
+            Carregando anúncios...
 
-      <label>
-        URL da imagem
-        <input
-          id="imagem_url"
-          type="url"
-          placeholder="https://..."
-        >
-      </label>
+          </div>
 
-      <div
-        id="imagePreview"
-        class="preview hidden"
-      >
-        <img
-          id="previewImg"
-          alt="Prévia"
-        >
-      </div>
 
-      <label>
-        Link da propaganda
-        <input
-          id="link_url"
-          type="url"
-          placeholder="https://..."
-          required
-        >
-      </label>
-
-      <label>
-        Descrição
-        <textarea
-          id="descricao"
-          rows="4"
-          placeholder="Descrição do anúncio"
-        ></textarea>
-      </label>
-
-      <div class="two">
-
-        <label>
-          Intervalo em minutos
-          <input
-            id="intervalo_minutos"
-            type="number"
-            min="0"
-            value="0"
+          <div
+            id="emptyState"
+            class="empty hidden"
           >
-          <small>0 = sempre que abrir a página.</small>
-        </label>
 
-        <label>
-          Status
+            <div class="empty-icon">
+              📢
+            </div>
 
-          <select id="ativo">
-            <option value="true">🟢 Ativo</option>
-            <option value="false">🔴 Inativo</option>
-          </select>
-        </label>
+            <h3>
+              Nenhuma propaganda cadastrada
+            </h3>
 
-      </div>
+            <p>
+              Crie seu primeiro anúncio para começar.
+            </p>
 
-      <div
-        id="formMessage"
-        class="form-message"
-      ></div>
+            <button
+              id="emptyNewBtn"
+              class="primary-btn"
+            >
+              ＋ Criar propaganda
+            </button>
 
-      <div class="modal-actions">
+          </div>
 
-        <button
-          type="button"
-          id="cancelBtn"
-          class="secondary"
-        >
-          Cancelar
-        </button>
 
-        <button
-          type="submit"
-          id="saveBtn"
-          class="primary"
-        >
-          💾 Salvar propaganda
-        </button>
+          <div
+            id="adsGrid"
+            class="ads-grid"
+          ></div>
+
+        </section>
 
       </div>
 
-    </form>
+
+      <footer>
+
+        © <span id="year"></span>
+        Gonçalves Câmbio
+
+        <span>
+          • Painel Administrativo
+        </span>
+
+      </footer>
+
+    </main>
 
   </div>
 
-</div>
+
+  <!-- MODAL -->
+
+  <div
+    id="modalOverlay"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal">
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="panel-label">
+            GERENCIAR ANÚNCIO
+          </span>
+
+          <h2 id="modalTitle">
+            Nova propaganda
+          </h2>
+
+        </div>
+
+        <button
+          id="closeModalBtn"
+          class="close-btn"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
 
 
-<div id="toast" class="toast"></div>
+      <form id="adForm">
 
-<script src="dashboard.js"></script>
+        <input
+          type="hidden"
+          id="adId"
+        >
+
+
+        <div class="form-group">
+
+          <label for="titulo">
+            Título
+          </label>
+
+          <input
+            id="titulo"
+            type="text"
+            placeholder="Ex.: Oferta especial"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="imagem_url">
+            URL da imagem
+          </label>
+
+          <input
+            id="imagem_url"
+            type="url"
+            placeholder="https://..."
+          >
+
+          <small>
+            Cole o endereço público da imagem.
+          </small>
+
+        </div>
+
+
+        <div
+          id="imagePreview"
+          class="image-preview hidden"
+        >
+
+          <img
+            id="previewImg"
+            alt="Prévia"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="link_url">
+            Link da propaganda
+          </label>
+
+          <input
+            id="link_url"
+            type="url"
+            placeholder="https://..."
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="descricao">
+            Descrição
+          </label>
+
+          <textarea
+            id="descricao"
+            rows="4"
+            placeholder="Descrição do anúncio..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label for="intervalo_minutos">
+              Intervalo
+            </label>
+
+            <div class="input-suffix">
+
+              <input
+                id="intervalo_minutos"
+                type="number"
+                min="0"
+                value="0"
+              >
+
+              <span>min</span>
+
+            </div>
+
+            <small>
+              0 = mostrar sempre.
+            </small>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <label class="switch">
+
+              <input
+                id="ativo"
+                type="checkbox"
+                checked
+              >
+
+              <span></span>
+
+              <b id="statusText">
+                Ativo
+              </b>
+
+            </label>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="formMessage"
+          class="form-message"
+        ></div>
+
+
+        <div class="modal-actions">
+
+          <button
+            id="cancelBtn"
+            type="button"
+            class="secondary-btn"
+          >
+            Cancelar
+          </button>
+
+          <button
+            id="saveBtn"
+            type="submit"
+            class="primary-btn"
+          >
+            💾 Salvar anúncio
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <div id="toast" class="toast"></div>
+
+  <script src="dashboard.js"></script>
 
 </body>
 </html>
