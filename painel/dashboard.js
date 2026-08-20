@@ -1,6 +1,6 @@
 /* =========================================================
    GONÇALVES CÂMBIO
-   DASHBOARD ADMINISTRATIVO V1
+   GERENCIADOR DE ANÚNCIOS
 ========================================================= */
 
 const SUPABASE_URL =
@@ -17,50 +17,171 @@ const supabaseClient =
 
 
 /* =========================================================
-   APIs
+   CONFIGURAÇÃO
 ========================================================= */
 
-const CURRENCY_API =
-  "https://open.er-api.com/v6/latest/BRL";
+const TABLE_NAME = "anuncios";
 
-const BITCOIN_API =
-  "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl&include_24hr_change=true";
+let anuncios = [];
+let anuncioParaExcluir = null;
 
 
 /* =========================================================
    ELEMENTOS
 ========================================================= */
 
-const $ = (id) =>
-  document.getElementById(id);
+const sections = {
+  dashboard:
+    document.getElementById("section-dashboard"),
+
+  anuncios:
+    document.getElementById("section-anuncios"),
+
+  novo:
+    document.getElementById("section-novo")
+};
+
+const pageTitle =
+  document.getElementById("pageTitle");
+
+const pageSubtitle =
+  document.getElementById("pageSubtitle");
+
+const usuarioLogado =
+  document.getElementById("usuarioLogado");
+
+const adsGrid =
+  document.getElementById("adsGrid");
+
+const recentAds =
+  document.getElementById("recentAds");
+
+const searchInput =
+  document.getElementById("searchInput");
+
+const statusFilter =
+  document.getElementById("statusFilter");
+
+const adForm =
+  document.getElementById("adForm");
+
+const adId =
+  document.getElementById("adId");
+
+const adTitle =
+  document.getElementById("adTitle");
+
+const adDescription =
+  document.getElementById("adDescription");
+
+const adLink =
+  document.getElementById("adLink");
+
+const adImage =
+  document.getElementById("adImage");
+
+const adStatus =
+  document.getElementById("adStatus");
+
+const formTitle =
+  document.getElementById("formTitle");
+
+const formMessage =
+  document.getElementById("formMessage");
+
+const saveBtn =
+  document.getElementById("saveBtn");
+
+const previewImage =
+  document.getElementById("previewImage");
+
+const previewTitle =
+  document.getElementById("previewTitle");
+
+const previewDescription =
+  document.getElementById("previewDescription");
+
+const toast =
+  document.getElementById("toast");
 
 
 /* =========================================================
-   INICIAR
+   NAVEGAÇÃO
 ========================================================= */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  async () => {
+function abrirSecao(nome) {
 
-    $("ano").textContent =
-      new Date().getFullYear();
-
-    configurarMenu();
-
-    configurarEventos();
-
-    const autenticado =
-      await verificarLogin();
-
-    if (!autenticado) {
-      return;
+  Object.values(sections).forEach(
+    section => {
+      if (section) {
+        section.classList.remove("active");
+      }
     }
+  );
 
-    await carregarDados();
+  if (sections[nome]) {
+    sections[nome].classList.add("active");
+  }
+
+
+  document
+    .querySelectorAll(".menu-item")
+    .forEach(item => {
+
+      item.classList.toggle(
+        "active",
+        item.dataset.section === nome
+      );
+
+    });
+
+
+  if (nome === "dashboard") {
+
+    pageTitle.textContent =
+      "Dashboard";
+
+    pageSubtitle.textContent =
+      "Gerencie suas propagandas e anúncios.";
 
   }
-);
+
+
+  if (nome === "anuncios") {
+
+    pageTitle.textContent =
+      "Meus anúncios";
+
+    pageSubtitle.textContent =
+      "Gerencie todas as suas propagandas.";
+
+    renderizarAnuncios();
+
+  }
+
+
+  if (nome === "novo") {
+
+    pageTitle.textContent =
+      adId.value
+        ? "Editar anúncio"
+        : "Novo anúncio";
+
+    pageSubtitle.textContent =
+      "Cadastre ou altere uma propaganda.";
+
+  }
+
+}
+
+
+function novoAnuncio() {
+
+  limparFormulario();
+
+  abrirSecao("novo");
+
+}
 
 
 /* =========================================================
@@ -79,6 +200,7 @@ async function verificarLogin() {
         .auth
         .getSession();
 
+
     if (
       error ||
       !data ||
@@ -92,27 +214,19 @@ async function verificarLogin() {
 
     }
 
-    const email =
+
+    usuarioLogado.textContent =
       data.session.user.email ||
       "Administrador";
 
-    if ($("usuarioLogado")) {
-      $("usuarioLogado").textContent =
-        email;
-    }
-
-    if ($("emailConfiguracao")) {
-      $("emailConfiguracao").textContent =
-        email;
-    }
 
     return true;
 
-  } catch (erro) {
+  } catch (error) {
 
     console.error(
-      "Erro no login:",
-      erro
+      "Erro ao verificar sessão:",
+      error
     );
 
     window.location.href =
@@ -126,403 +240,118 @@ async function verificarLogin() {
 
 
 /* =========================================================
-   MENU MOBILE
-========================================================= */
-
-function configurarMenu() {
-
-  const menuBtn =
-    $("menuBtn");
-
-  const sidebar =
-    $("sidebar");
-
-  if (!menuBtn || !sidebar) {
-    return;
-  }
-
-  menuBtn.addEventListener(
-    "click",
-    () => {
-
-      sidebar.classList.toggle(
-        "open"
-      );
-
-    }
-  );
-
-  document
-    .querySelectorAll(".menu-item")
-    .forEach(
-      item => {
-
-        item.addEventListener(
-          "click",
-          () => {
-
-            sidebar.classList.remove(
-              "open"
-            );
-
-          }
-        );
-
-      }
-    );
-
-}
-
-
-/* =========================================================
-   EVENTOS
-========================================================= */
-
-function configurarEventos() {
-
-  $("logoutBtn")?.addEventListener(
-    "click",
-    sair
-  );
-
-  $("novoAnuncioBtn")?.addEventListener(
-    "click",
-    abrirFormulario
-  );
-
-  $("fecharForm")?.addEventListener(
-    "click",
-    fecharFormulario
-  );
-
-  $("cancelarAnuncio")?.addEventListener(
-    "click",
-    fecharFormulario
-  );
-
-  $("salvarAnuncio")?.addEventListener(
-    "click",
-    salvarAnuncio
-  );
-
-  $("atualizarAnuncios")?.addEventListener(
-    "click",
-    carregarAnuncios
-  );
-
-  $("atualizarCotacoes")?.addEventListener(
-    "click",
-    carregarCotacoes
-  );
-
-  $("cancelarExclusao")?.addEventListener(
-    "click",
-    fecharModal
-  );
-
-  $("confirmarExclusao")?.addEventListener(
-    "click",
-    confirmarExclusao
-  );
-
-}
-
-
-/* =========================================================
-   CARREGAR DADOS
-========================================================= */
-
-async function carregarDados() {
-
-  await Promise.allSettled([
-
-    carregarAnuncios(),
-
-    carregarCotacoes(),
-
-    carregarBitcoin()
-
-  ]);
-
-}
-
-
-/* =========================================================
-   COTAÇÕES
-========================================================= */
-
-async function carregarCotacoes() {
-
-  try {
-
-    const resposta =
-      await fetch(
-        CURRENCY_API,
-        {
-          cache: "no-store"
-        }
-      );
-
-    if (!resposta.ok) {
-      throw new Error(
-        "Erro HTTP " +
-        resposta.status
-      );
-    }
-
-    const dados =
-      await resposta.json();
-
-    if (
-      !dados ||
-      !dados.rates
-    ) {
-      throw new Error(
-        "Dados inválidos"
-      );
-    }
-
-    const taxas =
-      dados.rates;
-
-    const usd =
-      1 / Number(taxas.USD);
-
-    const eur =
-      1 / Number(taxas.EUR);
-
-    const gbp =
-      1 / Number(taxas.GBP);
-
-    $("valorDolar").textContent =
-      formatarBRL(usd);
-
-    $("quoteUSD").textContent =
-      formatarBRL(usd);
-
-    $("quoteEUR").textContent =
-      formatarBRL(eur);
-
-    $("quoteGBP").textContent =
-      formatarBRL(gbp);
-
-  } catch (erro) {
-
-    console.error(
-      "Erro nas cotações:",
-      erro
-    );
-
-    $("valorDolar").textContent =
-      "Indisponível";
-
-  }
-
-}
-
-
-/* =========================================================
-   BITCOIN
-========================================================= */
-
-async function carregarBitcoin() {
-
-  try {
-
-    const resposta =
-      await fetch(
-        BITCOIN_API,
-        {
-          cache: "no-store"
-        }
-      );
-
-    if (!resposta.ok) {
-      throw new Error(
-        "Erro Bitcoin"
-      );
-    }
-
-    const dados =
-      await resposta.json();
-
-    const valor =
-      Number(
-        dados?.bitcoin?.brl
-      );
-
-    if (!Number.isFinite(valor)) {
-      throw new Error(
-        "Bitcoin indisponível"
-      );
-    }
-
-    const valorFormatado =
-      formatarBRL(valor);
-
-    $("valorBitcoin").textContent =
-      valorFormatado;
-
-    $("quoteBTC").textContent =
-      valorFormatado;
-
-  } catch (erro) {
-
-    console.error(
-      "Erro Bitcoin:",
-      erro
-    );
-
-    $("valorBitcoin").textContent =
-      "Indisponível";
-
-    $("quoteBTC").textContent =
-      "Indisponível";
-
-  }
-
-}
-
-
-/* =========================================================
-   FORMATAÇÃO
-========================================================= */
-
-function formatarBRL(valor) {
-
-  return new Intl.NumberFormat(
-    "pt-BR",
-    {
-      style: "currency",
-      currency: "BRL"
-    }
-  ).format(valor);
-
-}
-
-
-/* =========================================================
-   FORMULÁRIO
-========================================================= */
-
-function abrirFormulario() {
-
-  $("anuncioForm")
-    .classList
-    .remove("hidden");
-
-  $("anuncioTitulo").focus();
-
-  window.scrollTo({
-    top:
-      $("anuncioForm").offsetTop - 100,
-    behavior: "smooth"
-  });
-
-}
-
-
-function fecharFormulario() {
-
-  $("anuncioForm")
-    .classList
-    .add("hidden");
-
-  $("anuncioTitulo").value = "";
-  $("anuncioLink").value = "";
-  $("anuncioImagem").value = "";
-  $("anuncioStatus").value = "ativo";
-
-}
-
-
-/* =========================================================
-   ANÚNCIOS
+   CARREGAR ANÚNCIOS
 ========================================================= */
 
 async function carregarAnuncios() {
 
-  const lista =
-    $("listaAnuncios");
-
-  if (!lista) {
-    return;
-  }
-
-  lista.innerHTML = `
-    <div class="empty-state">
-      <div>⏳</div>
-      <strong>Carregando anúncios...</strong>
+  adsGrid.innerHTML = `
+    <div class="loading">
+      ⏳ Carregando anúncios...
     </div>
   `;
 
-  /*
-    IMPORTANTE:
 
-    A tabela "anuncios" precisa existir no Supabase.
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from(TABLE_NAME)
+      .select("*")
+      .order("created_at", {
+        ascending: false
+      });
 
-    Campos esperados:
-    id
-    titulo
-    link
-    imagem
-    status
-    created_at
-  */
 
-  try {
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient
-        .from("anuncios")
-        .select("*")
-        .order(
-          "created_at",
-          {
-            ascending: false
-          }
-        );
-
-    if (error) {
-
-      console.error(
-        "Erro Supabase:",
-        error
-      );
-
-      mostrarListaVazia(
-        "A tabela de anúncios ainda não está configurada."
-      );
-
-      atualizarContadores([]);
-
-      return;
-
-    }
-
-    renderizarAnuncios(
-      data || []
-    );
-
-    atualizarContadores(
-      data || []
-    );
-
-  } catch (erro) {
+  if (error) {
 
     console.error(
-      "Erro:",
-      erro
+      "Erro ao carregar anúncios:",
+      error
     );
 
-    mostrarListaVazia(
-      "Não foi possível carregar os anúncios."
-    );
+    adsGrid.innerHTML = `
+      <div class="empty-state">
+        <span>⚠️</span>
+        <strong>Não foi possível carregar os anúncios</strong>
+        <p>
+          Verifique se a tabela "anuncios"
+          foi criada no Supabase.
+        </p>
+      </div>
+    `;
+
+    anuncios = [];
+
+    atualizarEstatisticas();
+
+    return;
 
   }
+
+
+  anuncios =
+    data || [];
+
+
+  atualizarEstatisticas();
+
+  renderizarAnuncios();
+
+  renderizarRecentes();
+
+}
+
+
+/* =========================================================
+   ESTATÍSTICAS
+========================================================= */
+
+function atualizarEstatisticas() {
+
+  const total =
+    anuncios.length;
+
+  const ativos =
+    anuncios.filter(
+      anuncio =>
+        anuncio.ativo === true
+    ).length;
+
+  const comLink =
+    anuncios.filter(
+      anuncio =>
+        anuncio.link &&
+        anuncio.link.trim() !== ""
+    ).length;
+
+  const comImagem =
+    anuncios.filter(
+      anuncio =>
+        anuncio.imagem &&
+        anuncio.imagem.trim() !== ""
+    ).length;
+
+
+  document.getElementById(
+    "totalAnuncios"
+  ).textContent = total;
+
+
+  document.getElementById(
+    "anunciosAtivos"
+  ).textContent = ativos;
+
+
+  document.getElementById(
+    "anunciosComLink"
+  ).textContent = comLink;
+
+
+  document.getElementById(
+    "anunciosComImagem"
+  ).textContent = comImagem;
 
 }
 
@@ -531,132 +360,181 @@ async function carregarAnuncios() {
    RENDERIZAR ANÚNCIOS
 ========================================================= */
 
-function renderizarAnuncios(
-  anuncios
-) {
+function renderizarAnuncios() {
 
-  const lista =
-    $("listaAnuncios");
+  const busca =
+    (searchInput.value || "")
+      .toLowerCase()
+      .trim();
 
-  if (!lista) {
-    return;
-  }
+  const filtro =
+    statusFilter.value;
 
-  if (!anuncios.length) {
 
-    mostrarListaVazia(
-      "Nenhum anúncio cadastrado."
+  const filtrados =
+    anuncios.filter(
+      anuncio => {
+
+        const texto =
+          (
+            (anuncio.titulo || "") +
+            " " +
+            (anuncio.descricao || "")
+          ).toLowerCase();
+
+
+        const correspondeBusca =
+          !busca ||
+          texto.includes(busca);
+
+
+        let correspondeStatus =
+          true;
+
+
+        if (filtro === "ativos") {
+
+          correspondeStatus =
+            anuncio.ativo === true;
+
+        }
+
+
+        if (filtro === "inativos") {
+
+          correspondeStatus =
+            anuncio.ativo !== true;
+
+        }
+
+
+        return (
+          correspondeBusca &&
+          correspondeStatus
+        );
+
+      }
     );
 
+
+  if (!filtrados.length) {
+
+    adsGrid.innerHTML = `
+      <div class="empty-state">
+        <span>📢</span>
+        <strong>Nenhum anúncio encontrado</strong>
+        <p>
+          Crie um anúncio ou altere os filtros.
+        </p>
+      </div>
+    `;
+
     return;
 
   }
 
-  lista.innerHTML = "";
 
-  anuncios.forEach(
+  adsGrid.innerHTML = "";
+
+
+  filtrados.forEach(
     anuncio => {
 
-      const item =
-        document.createElement(
-          "div"
-        );
+      const card =
+        document.createElement("article");
 
-      item.className =
-        "ad-item";
+      card.className =
+        "ad-card";
+
 
       const imagem =
-        anuncio.imagem ||
-        "https://via.placeholder.com/150x100?text=Anuncio";
+        anuncio.imagem
+          ? `
+            <img
+              src="${escapeHtml(anuncio.imagem)}"
+              alt="${escapeHtml(anuncio.titulo || "Anúncio")}"
+              onerror="this.style.display='none';this.parentElement.innerHTML='<span class=&quot;no-image&quot;>🖼️</span>';"
+            >
+          `
+          : `<span class="no-image">🖼️</span>`;
 
-      const titulo =
-        escaparHTML(
-          anuncio.titulo ||
-          "Sem título"
-        );
-
-      const link =
-        anuncio.link ||
-        "#";
 
       const ativo =
-        anuncio.status ===
-        "ativo";
+        anuncio.ativo === true;
 
-      item.innerHTML = `
 
-        <img
-          class="ad-image"
-          src="${imagem}"
-          alt="${titulo}"
-          onerror="this.src='https://via.placeholder.com/150x100?text=Anuncio'"
-        >
+      card.innerHTML = `
 
-        <div class="ad-info">
-
-          <strong>
-            ${titulo}
-          </strong>
-
-          <span>
-            ${escaparHTML(link)}
-          </span>
-
+        <div class="ad-image">
+          ${imagem}
         </div>
 
-        <span class="status-badge ${
-          ativo ? "active" : ""
-        }">
+        <div class="ad-body">
 
-          ${
+          <span class="status-badge ${
             ativo
-              ? "🟢 Ativo"
-              : "⚪ Inativo"
-          }
+              ? "status-active"
+              : "status-inactive"
+          }">
+            ${
+              ativo
+                ? "🟢 ATIVO"
+                : "🔴 INATIVO"
+            }
+          </span>
 
-        </span>
+          <h3>
+            ${escapeHtml(
+              anuncio.titulo ||
+              "Sem título"
+            )}
+          </h3>
 
-        <div class="ad-actions">
+          <p>
+            ${escapeHtml(
+              anuncio.descricao ||
+              "Sem descrição."
+            )}
+          </p>
 
-          <a
-            class="small-btn"
-            href="${link}"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            🔗 Abrir
-          </a>
+          <div class="ad-actions">
 
-          <button
-            class="small-btn delete"
-            data-id="${anuncio.id}"
-          >
-            🗑️
-          </button>
+            <button
+              class="small-btn edit-btn"
+              data-action="edit"
+              data-id="${anuncio.id}"
+            >
+              ✏️ Editar
+            </button>
+
+            <button
+              class="small-btn toggle-btn"
+              data-action="toggle"
+              data-id="${anuncio.id}"
+            >
+              ${
+                ativo
+                  ? "🔴 Desativar"
+                  : "🟢 Ativar"
+              }
+            </button>
+
+            <button
+              class="small-btn delete-btn"
+              data-action="delete"
+              data-id="${anuncio.id}"
+            >
+              🗑️ Excluir
+            </button>
+
+          </div>
 
         </div>
 
       `;
 
-      const excluir =
-        item.querySelector(
-          ".delete"
-        );
 
-      excluir.addEventListener(
-        "click",
-        () => {
-
-          abrirModal(
-            anuncio.id
-          );
-
-        }
-      );
-
-      lista.appendChild(
-        item
-      );
+      adsGrid.appendChild(card);
 
     }
   );
@@ -665,28 +543,162 @@ function renderizarAnuncios(
 
 
 /* =========================================================
-   CONTADORES
+   RECENTES
 ========================================================= */
 
-function atualizarContadores(
-  anuncios
-) {
+function renderizarRecentes() {
 
-  const ativos =
-    anuncios.filter(
-      anuncio =>
-        anuncio.status ===
-        "ativo"
+  const recentes =
+    anuncios.slice(0, 5);
+
+
+  if (!recentes.length) {
+
+    recentAds.innerHTML = `
+      <div class="empty-state">
+        <span>📢</span>
+        <strong>Nenhum anúncio cadastrado</strong>
+        <p>Crie seu primeiro anúncio.</p>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  recentAds.innerHTML = "";
+
+
+  recentes.forEach(
+    anuncio => {
+
+      const item =
+        document.createElement("div");
+
+      item.className =
+        "recent-item";
+
+
+      item.innerHTML = `
+
+        <div>
+
+          <strong>
+            ${escapeHtml(
+              anuncio.titulo ||
+              "Sem título"
+            )}
+          </strong>
+
+          <span>
+            ${
+              anuncio.ativo
+                ? "Anúncio ativo"
+                : "Anúncio inativo"
+            }
+          </span>
+
+        </div>
+
+        <span class="status-badge ${
+          anuncio.ativo
+            ? "status-active"
+            : "status-inactive"
+        }">
+
+          ${
+            anuncio.ativo
+              ? "ATIVO"
+              : "INATIVO"
+          }
+
+        </span>
+
+      `;
+
+
+      recentAds.appendChild(item);
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   FORMULÁRIO
+========================================================= */
+
+function limparFormulario() {
+
+  adForm.reset();
+
+  adId.value = "";
+
+  adStatus.value =
+    "true";
+
+  formTitle.textContent =
+    "Novo anúncio";
+
+  saveBtn.textContent =
+    "💾 Salvar anúncio";
+
+  formMessage.textContent = "";
+
+  atualizarPreview();
+
+}
+
+
+function editarAnuncio(id) {
+
+  const anuncio =
+    anuncios.find(
+      item =>
+        String(item.id) ===
+        String(id)
     );
 
-  $("totalAnuncios").textContent =
-    ativos.length;
 
-  $("totalLinks").textContent =
-    anuncios.filter(
-      anuncio =>
-        anuncio.link
-    ).length;
+  if (!anuncio) return;
+
+
+  adId.value =
+    anuncio.id || "";
+
+  adTitle.value =
+    anuncio.titulo || "";
+
+  adDescription.value =
+    anuncio.descricao || "";
+
+  adLink.value =
+    anuncio.link || "";
+
+  adImage.value =
+    anuncio.imagem || "";
+
+  adStatus.value =
+    anuncio.ativo
+      ? "true"
+      : "false";
+
+
+  formTitle.textContent =
+    "Editar anúncio";
+
+  saveBtn.textContent =
+    "💾 Salvar alterações";
+
+
+  formMessage.textContent = "";
+
+
+  atualizarPreview();
+
+  abrirSecao("novo");
 
 }
 
@@ -695,166 +707,210 @@ function atualizarContadores(
    SALVAR
 ========================================================= */
 
-async function salvarAnuncio() {
+async function salvarAnuncio(event) {
+
+  event.preventDefault();
+
 
   const titulo =
-    $("anuncioTitulo")
-      .value
-      .trim();
+    adTitle.value.trim();
+
+  const descricao =
+    adDescription.value.trim();
 
   const link =
-    $("anuncioLink")
-      .value
-      .trim();
+    adLink.value.trim();
 
   const imagem =
-    $("anuncioImagem")
-      .value
-      .trim();
+    adImage.value.trim();
 
-  const status =
-    $("anuncioStatus")
-      .value;
+  const ativo =
+    adStatus.value === "true";
+
 
   if (!titulo) {
 
-    alert(
-      "Digite o título do anúncio."
+    mostrarMensagem(
+      "Digite um título para o anúncio.",
+      "error"
     );
 
     return;
 
   }
 
-  if (!link) {
 
-    alert(
-      "Digite o link da propaganda."
-    );
+  saveBtn.disabled = true;
 
-    return;
+  saveBtn.textContent =
+    "⏳ Salvando...";
+
+
+  const dados = {
+
+    titulo,
+
+    descricao,
+
+    link,
+
+    imagem,
+
+    ativo
+
+  };
+
+
+  let resultado;
+
+
+  if (adId.value) {
+
+    resultado =
+      await supabaseClient
+        .from(TABLE_NAME)
+        .update(dados)
+        .eq("id", adId.value);
+
+  } else {
+
+    resultado =
+      await supabaseClient
+        .from(TABLE_NAME)
+        .insert(dados);
 
   }
 
-  const botao =
-    $("salvarAnuncio");
 
-  botao.disabled =
-    true;
-
-  botao.textContent =
-    "Salvando...";
-
-  try {
-
-    const {
-      data: usuario
-    } =
-      await supabaseClient
-        .auth
-        .getUser();
-
-    if (!usuario?.user) {
-
-      alert(
-        "Sua sessão expirou. Faça login novamente."
-      );
-
-      window.location.href =
-        "index.html";
-
-      return;
-
-    }
-
-    const {
-      error
-    } =
-      await supabaseClient
-        .from("anuncios")
-        .insert({
-
-          titulo,
-          link,
-          imagem,
-          status
-
-        });
-
-    if (error) {
-
-      console.error(
-        "Erro ao salvar:",
-        error
-      );
-
-      alert(
-        "Não foi possível salvar. Verifique se a tabela 'anuncios' existe no Supabase."
-      );
-
-      return;
-
-    }
-
-    alert(
-      "Anúncio salvo com sucesso!"
-    );
-
-    fecharFormulario();
-
-    await carregarAnuncios();
-
-  } catch (erro) {
+  if (resultado.error) {
 
     console.error(
-      erro
+      "Erro ao salvar:",
+      resultado.error
     );
 
-    alert(
-      "Erro ao salvar o anúncio."
+
+    mostrarMensagem(
+      "Erro ao salvar. Verifique a tabela no Supabase.",
+      "error"
     );
 
-  } finally {
 
-    botao.disabled =
-      false;
+    saveBtn.disabled = false;
 
-    botao.textContent =
-      "💾 Salvar anúncio";
+    saveBtn.textContent =
+      adId.value
+        ? "💾 Salvar alterações"
+        : "💾 Salvar anúncio";
+
+    return;
 
   }
+
+
+  mostrarMensagem(
+    "Anúncio salvo com sucesso!",
+    "success"
+  );
+
+
+  mostrarToast(
+    "Anúncio salvo com sucesso!"
+  );
+
+
+  await carregarAnuncios();
+
+
+  setTimeout(
+    () => {
+
+      limparFormulario();
+
+      abrirSecao("anuncios");
+
+    },
+    600
+  );
+
+
+  saveBtn.disabled = false;
 
 }
 
 
 /* =========================================================
-   EXCLUSÃO
+   ATIVAR / DESATIVAR
 ========================================================= */
 
-let anuncioParaExcluir =
-  null;
+async function alternarAnuncio(id) {
+
+  const anuncio =
+    anuncios.find(
+      item =>
+        String(item.id) ===
+        String(id)
+    );
 
 
-function abrirModal(id) {
+  if (!anuncio) return;
 
-  anuncioParaExcluir =
-    id;
 
-  $("modal")
-    .classList
-    .remove("hidden");
+  const novoStatus =
+    anuncio.ativo !== true;
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from(TABLE_NAME)
+      .update({
+        ativo: novoStatus
+      })
+      .eq("id", id);
+
+
+  if (error) {
+
+    console.error(
+      "Erro ao alterar status:",
+      error
+    );
+
+    mostrarToast(
+      "Não foi possível alterar o status."
+    );
+
+    return;
+
+  }
+
+
+  mostrarToast(
+    novoStatus
+      ? "Anúncio ativado!"
+      : "Anúncio desativado!"
+  );
+
+
+  await carregarAnuncios();
 
 }
 
 
-function fecharModal() {
+/* =========================================================
+   EXCLUIR
+========================================================= */
+
+function solicitarExclusao(id) {
 
   anuncioParaExcluir =
-    null;
+    id;
 
-  $("modal")
-    .classList
-    .add("hidden");
+  document
+    .getElementById("deleteModal")
+    .classList.add("show");
 
 }
 
@@ -865,170 +921,375 @@ async function confirmarExclusao() {
     return;
   }
 
+
   const id =
     anuncioParaExcluir;
 
-  const botao =
-    $("confirmarExclusao");
 
-  botao.disabled =
-    true;
+  const {
+    error
+  } =
+    await supabaseClient
+      .from(TABLE_NAME)
+      .delete()
+      .eq("id", id);
 
-  botao.textContent =
-    "Excluindo...";
 
-  try {
+  if (error) {
 
-    const {
+    console.error(
+      "Erro ao excluir:",
       error
-    } =
-      await supabaseClient
-        .from("anuncios")
-        .delete()
-        .eq(
-          "id",
-          id
-        );
+    );
 
-    if (error) {
+    mostrarToast(
+      "Não foi possível excluir o anúncio."
+    );
 
-      console.error(
-        error
-      );
+  } else {
 
-      alert(
-        "Não foi possível excluir o anúncio."
-      );
+    mostrarToast(
+      "Anúncio excluído!"
+    );
 
+    await carregarAnuncios();
+
+  }
+
+
+  fecharModal();
+
+}
+
+
+function fecharModal() {
+
+  anuncioParaExcluir =
+    null;
+
+  document
+    .getElementById("deleteModal")
+    .classList.remove("show");
+
+}
+
+
+/* =========================================================
+   PREVIEW
+========================================================= */
+
+function atualizarPreview() {
+
+  previewTitle.textContent =
+    adTitle.value.trim() ||
+    "Título do anúncio";
+
+
+  previewDescription.textContent =
+    adDescription.value.trim() ||
+    "A descrição do anúncio aparecerá aqui.";
+
+
+  const imagem =
+    adImage.value.trim();
+
+
+  if (imagem) {
+
+    previewImage.innerHTML = `
+      <img
+        src="${escapeHtml(imagem)}"
+        alt="Prévia do anúncio"
+        onerror="this.style.display='none';this.parentElement.innerHTML='🖼️';"
+      >
+    `;
+
+  } else {
+
+    previewImage.innerHTML =
+      "🖼️";
+
+  }
+
+}
+
+
+/* =========================================================
+   MENSAGENS
+========================================================= */
+
+function mostrarMensagem(
+  texto,
+  tipo
+) {
+
+  formMessage.textContent =
+    texto;
+
+  formMessage.className =
+    "form-message " +
+    (tipo || "");
+
+}
+
+
+function mostrarToast(texto) {
+
+  toast.textContent =
+    texto;
+
+  toast.classList.add("show");
+
+
+  setTimeout(
+    () => {
+
+      toast.classList.remove("show");
+
+    },
+    3000
+  );
+
+}
+
+
+/* =========================================================
+   SEGURANÇA BÁSICA DE HTML
+========================================================= */
+
+function escapeHtml(valor) {
+
+  return String(valor || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================================
+   EVENTOS
+========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  async function() {
+
+    const autenticado =
+      await verificarLogin();
+
+
+    if (!autenticado) {
       return;
-
     }
 
-    fecharModal();
 
     await carregarAnuncios();
 
-  } catch (erro) {
 
-    console.error(
-      erro
-    );
+    /* MENU */
 
-    alert(
-      "Erro ao excluir."
-    );
+    document
+      .querySelectorAll(".menu-item")
+      .forEach(item => {
 
-  } finally {
+        item.addEventListener(
+          "click",
+          () => {
 
-    botao.disabled =
-      false;
+            abrirSecao(
+              item.dataset.section
+            );
 
-    botao.textContent =
-      "Excluir";
+          }
+        );
 
-  }
-
-}
-
-
-/* =========================================================
-   LISTA VAZIA
-========================================================= */
-
-function mostrarListaVazia(
-  mensagem
-) {
-
-  $("listaAnuncios").innerHTML = `
-
-    <div class="empty-state">
-
-      <div>📢</div>
-
-      <strong>
-        ${mensagem}
-      </strong>
-
-      <span>
-        Clique em "Novo anúncio" para cadastrar.
-      </span>
-
-    </div>
-
-  `;
-
-}
-
-
-/* =========================================================
-   SEGURANÇA BÁSICA
-========================================================= */
-
-function escaparHTML(
-  texto
-) {
-
-  return String(texto)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-
-}
-
-
-/* =========================================================
-   SAIR
-========================================================= */
-
-async function sair() {
-
-  const botao =
-    $("logoutBtn");
-
-  botao.disabled =
-    true;
-
-  botao.textContent =
-    "Saindo...";
-
-  try {
-
-    await supabaseClient
-      .auth
-      .signOut({
-        scope: "local"
       });
 
-  } catch (erro) {
 
-    console.error(
-      "Erro ao sair:",
-      erro
+    /* BOTÕES NOVO */
+
+    document
+      .getElementById("newAdBtn")
+      .addEventListener(
+        "click",
+        novoAnuncio
+      );
+
+
+    document
+      .getElementById("newAdTopBtn")
+      .addEventListener(
+        "click",
+        novoAnuncio
+      );
+
+
+    /* BOTÃO CANCELAR */
+
+    document
+      .getElementById("cancelBtn")
+      .addEventListener(
+        "click",
+        () => {
+
+          limparFormulario();
+
+          abrirSecao("anuncios");
+
+        }
+      );
+
+
+    /* FORM */
+
+    adForm.addEventListener(
+      "submit",
+      salvarAnuncio
     );
 
+
+    /* PREVIEW */
+
+    [
+      adTitle,
+      adDescription,
+      adImage
+    ].forEach(
+      campo => {
+
+        campo.addEventListener(
+          "input",
+          atualizarPreview
+        );
+
+      }
+    );
+
+
+    /* BUSCA */
+
+    searchInput.addEventListener(
+      "input",
+      renderizarAnuncios
+    );
+
+
+    statusFilter.addEventListener(
+      "change",
+      renderizarAnuncios
+    );
+
+
+    /* AÇÕES DOS CARDS */
+
+    adsGrid.addEventListener(
+      "click",
+      event => {
+
+        const botao =
+          event.target.closest(
+            "button[data-action]"
+          );
+
+
+        if (!botao) return;
+
+
+        const id =
+          botao.dataset.id;
+
+        const action =
+          botao.dataset.action;
+
+
+        if (action === "edit") {
+
+          editarAnuncio(id);
+
+        }
+
+
+        if (action === "toggle") {
+
+          alternarAnuncio(id);
+
+        }
+
+
+        if (action === "delete") {
+
+          solicitarExclusao(id);
+
+        }
+
+      }
+    );
+
+
+    /* VER TODOS */
+
+    document
+      .querySelectorAll(
+        "[data-go-section]"
+      )
+      .forEach(
+        botao => {
+
+          botao.addEventListener(
+            "click",
+            () => {
+
+              abrirSecao(
+                botao.dataset.goSection
+              );
+
+            }
+          );
+
+        }
+      );
+
+
+    /* MODAL */
+
+    document
+      .getElementById("cancelDelete")
+      .addEventListener(
+        "click",
+        fecharModal
+      );
+
+
+    document
+      .getElementById("confirmDelete")
+      .addEventListener(
+        "click",
+        confirmarExclusao
+      );
+
+
+    /* LOGOUT */
+
+    document
+      .getElementById("logoutBtn")
+      .addEventListener(
+        "click",
+        async () => {
+
+          await supabaseClient
+            .auth
+            .signOut({
+              scope: "local"
+            });
+
+          window.location.href =
+            "index.html";
+
+        }
+      );
+
   }
-
-  window.location.href =
-    "index.html";
-
-}
-
-
-/* =========================================================
-   ATUALIZAÇÃO AUTOMÁTICA
-========================================================= */
-
-setInterval(
-  async () => {
-
-    await carregarAnuncios();
-
-    await carregarCotacoes();
-
-    await carregarBitcoin();
-
-  },
-  5 * 60 * 1000
 );
